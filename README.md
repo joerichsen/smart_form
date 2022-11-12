@@ -2,6 +2,13 @@
 
 SmartForm is a hex package to make working with forms in Phoenix LiveView easy and simple while at the same time support complex forms.
 
+## Features
+
+* field definitions and validations in the same spot
+* working with nested data is a breeze
+* non-trivial mappings between source data and the form data is supported
+* partial validation
+
 ## Example
 
 ```elixir
@@ -32,6 +39,10 @@ end
 ## Documentation
 
 API documentation is available at <https://hexdocs.pm/smart_form>.
+
+## Inspiration
+
+SmartForm is inspired by Ecto itself as well as [Ash Framework](https://www.ash-hq.org/) and [Data Division](https://github.com/pragdave/data_division).
 
 ## License
 
