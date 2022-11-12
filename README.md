@@ -5,6 +5,16 @@ SmartForm is a hex package to make working with forms in Phoenix LiveView easy a
 ## Example
 
 ```elixir
+# Define the form
+defmodule Form do
+  use SmartForm
+
+  fields do
+    field :name, :string, validate: :required
+  end
+end
+
+# Using the form
 ```
 
 ## Installation
