@@ -37,4 +37,4 @@ API documentation is available at <https://hexdocs.pm/smart_form>.
 
 Copyright (c) 2022, Jørgen Orehøj Erichsen
 
-SmartForm source code is licensed under the [MIT License](LICENSE.md).
+SmartForm source code is licensed under the [MIT License](LICENSE).
