@@ -6,7 +6,7 @@ defmodule SmartFormTest do
     use SmartForm
 
     fields do
-      field(:name, :string, validate: :required)
+      field :name, :string, validate: :required
     end
   end
 end
