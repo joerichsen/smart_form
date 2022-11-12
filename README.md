@@ -1,6 +1,11 @@
 # SmartForm
 
-**TODO: Add description**
+SmartForm is a hex package to make working with forms in Phoenix LiveView easy and simple while at the same time support complex forms.
+
+## Example
+
+```elixir
+```
 
 ## Installation
 
@@ -15,7 +20,12 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/smart_form>.
+## Documentation
 
+API documentation is available at <https://hexdocs.pm/smart_form>.
+
+## License
+
+Copyright (c) 2022, Jørgen Orehøj Erichsen
+
+SmartForm source code is licensed under the [MIT License](LICENSE.md).
