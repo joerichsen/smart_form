@@ -6,7 +6,7 @@ SmartForm is a hex package to make working with forms in Phoenix LiveView easy a
 
 * field definitions and validations in the same spot
 * working with nested data is a breeze
-* non-trivial mappings between source data and the form data is supported
+* non-trivial mappings between source data and the form data are supported
 * partial validation
 
 ## Example
