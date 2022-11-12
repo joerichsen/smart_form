@@ -1,18 +1,10 @@
 defmodule SmartForm do
-  @moduledoc """
-  Documentation for `SmartForm`.
-  """
+  defmacro fields(do: fields) do
+  end
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> SmartForm.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  defmacro __using__(_) do
+    quote do
+      import SmartForm, only: [fields: 1]
+    end
   end
 end
