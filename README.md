@@ -1,6 +1,6 @@
 # SmartForm
 
-SmartForm is a hex package to make working with forms in Phoenix LiveView easy and simple while at the same time support complex forms.
+SmartForm is a hex package to make working with forms in [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view) easy and simple while at the same time support complex forms.
 
 ## Features
 
