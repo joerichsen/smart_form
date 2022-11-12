@@ -21,7 +21,7 @@ defmodule SmartForm.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      { :phoenix_html, ">= 3.2.0" }
+      {:phoenix_html, ">= 3.2.0"}
     ]
   end
 end
