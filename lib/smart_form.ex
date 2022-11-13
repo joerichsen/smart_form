@@ -6,7 +6,11 @@ defmodule SmartForm do
     quote do
       import SmartForm, only: [fields: 1]
 
-      defstruct source: nil, source_changes: %{}, form_changes: %{}, errors: %{}, fields: []
+      defstruct source: nil
+
+      def new(source) do
+        %__MODULE__{source: source}
+      end
     end
   end
 end
