@@ -1,5 +1,10 @@
 defmodule SmartForm do
   defmacro fields(do: fields) do
+    fields = name_type_and_opts(fields)
+
+    quote do
+      @fields unquote(Macro.escape(fields))
+    end
   end
 
   defmacro __using__(_) do
@@ -17,4 +22,7 @@ defmodule SmartForm do
       end
     end
   end
+
+  def name_type_and_opts({:field, _, [name, type, opts]}), do: {name, type, opts}
+  def name_type_and_opts({:__block__, _, fields}), do: fields |> Enum.map(&name_type_and_opts(&1))
 end
