@@ -6,10 +6,14 @@ defmodule SmartForm do
     quote do
       import SmartForm, only: [fields: 1]
 
-      defstruct source: nil
+      defstruct source: nil, valid?: nil
 
       def new(source) do
         %__MODULE__{source: source}
+      end
+
+      def validate(form, params) do
+        form |> Map.put(:valid?, true)
       end
     end
   end
