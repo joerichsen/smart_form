@@ -3,7 +3,8 @@ defmodule SmartForm do
     fields = name_type_and_opts(fields)
 
     quote do
-      @fields unquote(Macro.escape(fields))
+      @__fields unquote(Macro.escape(fields))
+      def __fields, do: @__fields
     end
   end
 
