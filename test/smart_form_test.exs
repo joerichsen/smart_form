@@ -13,7 +13,7 @@ defmodule SmartFormTest do
   end
 
   describe "new" do
-    test "should accept a struct as an argument" do
+    test "should accept a struct as an argument and make it the source" do
       user = %User{firstname: "Marie"}
       form = UserForm.new(user)
       assert form.source == user
