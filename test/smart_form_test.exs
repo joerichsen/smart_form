@@ -9,7 +9,7 @@ defmodule SmartFormTest do
 
     fields do
       field :firstname, :string, validate: :required
-      field :lastname, :string, validate: :required
+      field :lastname, :string, validate: :format
     end
   end
 

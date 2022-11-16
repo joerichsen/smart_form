@@ -19,7 +19,28 @@ defmodule SmartForm do
       end
 
       def validate(form, params) do
-        form |> Map.put(:valid?, true)
+        valid =
+          __MODULE__.__fields()
+          |> Enum.all?(fn {name, type, opts} ->
+            value = Map.get(params, name) || Map.get(params, to_string(name))
+            validations = Keyword.get(opts, :validate, [])
+
+            validations =
+              if is_atom(validations) do
+                validations = [validations]
+              else
+                validations
+              end
+
+            Enum.all?(validations, fn validation ->
+              case validation do
+                :required -> !is_nil(value) && value != ""
+                _ -> true
+              end
+            end)
+          end)
+
+        form |> Map.put(:valid?, valid)
       end
     end
   end
