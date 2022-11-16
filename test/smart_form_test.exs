@@ -4,21 +4,27 @@ defmodule SmartFormTest do
 
   alias SmartForm.User
 
-  defmodule UserForm do
+  defmodule NewUserForm do
     use SmartForm
 
     fields do
-      field :firstname, :string, validate_required: true
-      field :lastname, :string
-      field :email, :string, validate_format: ~r/@/, validate_required: true
+      field :firstname, :string
     end
   end
 
   describe "new" do
     test "should accept a struct as an argument and make it the source" do
       user = %User{firstname: "Marie"}
-      form = UserForm.new(user)
+      form = NewUserForm.new(user)
       assert form.source == user
+    end
+  end
+
+  defmodule ValidateUserForm do
+    use SmartForm
+
+    fields do
+      field :firstname, :string, validate_required: true
     end
   end
 
@@ -27,8 +33,8 @@ defmodule SmartFormTest do
       user = %User{}
 
       form =
-        UserForm.new(user)
-        |> UserForm.validate(%{"firstname" => "Marie", "email" => "marie@example.com"})
+        ValidateUserForm.new(user)
+        |> ValidateUserForm.validate(%{"firstname" => "Marie"})
 
       assert form.valid? == true
     end
@@ -37,8 +43,8 @@ defmodule SmartFormTest do
       user = %User{}
 
       form =
-        UserForm.new(user)
-        |> UserForm.validate(%{"firstname" => "", "email" => "marie@example.com"})
+        ValidateUserForm.new(user)
+        |> ValidateUserForm.validate(%{"firstname" => ""})
 
       refute form.valid?
     end
