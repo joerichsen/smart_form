@@ -21,7 +21,9 @@ defmodule SmartForm.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:phoenix_html, ">= 3.2.0"}
+      {:phoenix_html, ">= 3.2.0"},
+      {:ecto, ">= 3.9.1"},
+      {:ecto_sqlite3, "~> 0.8.2", only: [:dev, :test]}
     ]
   end
 end
