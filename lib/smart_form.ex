@@ -34,8 +34,14 @@ defmodule SmartForm do
             opts
             |> Enum.all?(fn opt ->
               case opt do
-                {:required, true} -> Ecto.Changeset.validate_required(changeset, name).valid?
-                _ -> true
+                {:required, true} ->
+                  Ecto.Changeset.validate_required(changeset, name).valid?
+
+                {:format, format} ->
+                  Ecto.Changeset.validate_format(changeset, name, format).valid?
+
+                _ ->
+                  true
               end
             end)
           end)
@@ -45,7 +51,11 @@ defmodule SmartForm do
     end
   end
 
-  def name_type_and_opts({:field, _, [name, type, opts]}), do: [{name, type, opts}]
+  def name_type_and_opts({:field, _, [name, type, opts]}) do
+    {opts, _} = Code.eval_quoted(opts)
+    [{name, type, opts}]
+  end
+
   def name_type_and_opts({:field, _, [name, type]}), do: [{name, type, nil}]
 
   def name_type_and_opts({:__block__, _, fields}),
