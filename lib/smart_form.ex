@@ -32,9 +32,9 @@ defmodule SmartForm do
             opts = opts || []
 
             opts
-            |> Enum.all?(fn {opt, args} ->
+            |> Enum.all?(fn opt ->
               case opt do
-                :required -> Ecto.Changeset.validate_required(changeset, name).valid?
+                {:required, true} -> Ecto.Changeset.validate_required(changeset, name).valid?
                 _ -> true
               end
             end)
