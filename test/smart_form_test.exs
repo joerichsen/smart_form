@@ -109,4 +109,46 @@ defmodule SmartFormTest do
       refute form.valid?
     end
   end
+
+  defmodule MultipleValidationsUserForm do
+    use SmartForm
+
+    fields do
+      field :firstname, :string, required: true
+      field :email, :string, format: ~r/@/, required: true
+    end
+  end
+
+  describe "multiple validations" do
+    test "should validate multiple fields" do
+      user = %User{}
+
+      form =
+        MultipleValidationsUserForm.new(user)
+        |> MultipleValidationsUserForm.validate(%{"firstname" => "Marie"})
+
+      refute form.valid?
+
+      form =
+        MultipleValidationsUserForm.new(user)
+        |> MultipleValidationsUserForm.validate(%{"firstname" => "Marie", "email" => "marie"})
+
+      refute form.valid?
+
+      form =
+        MultipleValidationsUserForm.new(user)
+        |> MultipleValidationsUserForm.validate(%{"email" => "marie@example.com"})
+
+      refute form.valid?
+
+      form =
+        MultipleValidationsUserForm.new(user)
+        |> MultipleValidationsUserForm.validate(%{
+          "firstname" => "Marie",
+          "email" => "marie@example.com"
+        })
+
+      assert form.valid?
+    end
+  end
 end
