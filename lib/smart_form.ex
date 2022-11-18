@@ -24,10 +24,17 @@ defmodule SmartForm do
           |> Enum.all?(fn {name, type, opts} ->
             value = Map.get(params, name) || Map.get(params, to_string(name))
 
-            if opts && Keyword.get(opts, :validate_required) do
-              !is_nil(value) && value != ""
-            else
-              true
+            if opts do
+              cond do
+                Keyword.get(opts, :validate_required) ->
+                  !is_nil(value) && value != ""
+
+                Keyword.get(opts, :validate_format) ->
+                  !is_nil(value) && !Regex.match?(Keyword.get(opts, :validate_format), value)
+
+                true ->
+                  true
+              end
             end
           end)
 
