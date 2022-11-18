@@ -18,24 +18,26 @@ defmodule SmartForm do
         %__MODULE__{source: source}
       end
 
+      def changeset(form, params) do
+        types = __fields() |> Enum.map(fn {name, type, _} -> {name, type} end) |> Enum.into(%{})
+        changeset = {form.source, types} |> Ecto.Changeset.cast(params, Map.keys(types))
+      end
+
       def validate(form, params) do
+        changeset = changeset(form, params)
+
         valid =
           __fields()
-          |> Enum.all?(fn {name, type, opts} ->
-            value = Map.get(params, name) || Map.get(params, to_string(name))
+          |> Enum.all?(fn {name, _, opts} ->
+            opts = opts || []
 
-            if opts do
-              cond do
-                Keyword.get(opts, :validate_required) ->
-                  !is_nil(value) && value != ""
-
-                Keyword.get(opts, :validate_format) ->
-                  !is_nil(value) && !Regex.match?(Keyword.get(opts, :validate_format), value)
-
-                true ->
-                  true
+            opts
+            |> Enum.all?(fn {opt, args} ->
+              case opt do
+                :required -> Ecto.Changeset.validate_required(changeset, name).valid?
+                _ -> true
               end
-            end
+            end)
           end)
 
         form |> Map.put(:valid?, valid)
