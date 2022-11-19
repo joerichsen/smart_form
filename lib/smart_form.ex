@@ -49,6 +49,9 @@ defmodule SmartForm do
                 {:is, is} ->
                   Ecto.Changeset.validate_length(changeset, name, is: is).valid?
 
+                {:in, data} ->
+                  Ecto.Changeset.validate_inclusion(changeset, name, data).valid?
+
                 _ ->
                   true
               end

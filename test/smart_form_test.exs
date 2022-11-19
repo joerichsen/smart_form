@@ -218,4 +218,36 @@ defmodule SmartFormTest do
       assert form.valid?
     end
   end
+
+  describe "inclusion validation" do
+    defmodule InclusionValidationForm do
+      use SmartForm
+
+      fields do
+        field :role, :string, in: ["admin", "user"]
+      end
+    end
+
+    test "should validate the inclusion of a string" do
+      user = %User{}
+
+      form =
+        InclusionValidationForm.new(user)
+        |> InclusionValidationForm.validate(%{"role" => "admin"})
+
+      assert form.valid?
+
+      form =
+        InclusionValidationForm.new(user)
+        |> InclusionValidationForm.validate(%{"role" => "user"})
+
+      assert form.valid?
+
+      form =
+        InclusionValidationForm.new(user)
+        |> InclusionValidationForm.validate(%{"role" => "guest"})
+
+      refute form.valid?
+    end
+  end
 end
