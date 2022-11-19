@@ -26,69 +26,71 @@ defmodule SmartForm do
       def validate(form, params) do
         changeset = changeset(form, params)
 
-        valid =
+        name_and_opt =
           __fields()
-          |> Enum.all?(fn {name, _, opts} ->
-            opts = opts || []
+          |> Enum.map(fn {name, _, opts} -> Enum.map(opts, fn opt -> {name, opt} end) end)
 
-            opts
-            |> Enum.all?(fn opt ->
+        # Apply validations
+        changeset =
+          name_and_opt
+          |> Enum.reduce(changeset, fn opts, changeset ->
+            Enum.reduce(opts, changeset, fn {name, opt}, changeset ->
               case opt do
                 {:required, true} ->
-                  Ecto.Changeset.validate_required(changeset, name).valid?
+                  Ecto.Changeset.validate_required(changeset, name)
 
                 {:format, format} ->
-                  Ecto.Changeset.validate_format(changeset, name, format).valid?
+                  Ecto.Changeset.validate_format(changeset, name, format)
 
                 {:min, min} ->
-                  Ecto.Changeset.validate_length(changeset, name, min: min).valid?
+                  Ecto.Changeset.validate_length(changeset, name, min: min)
 
                 {:max, max} ->
-                  Ecto.Changeset.validate_length(changeset, name, max: max).valid?
+                  Ecto.Changeset.validate_length(changeset, name, max: max)
 
                 {:is, is} ->
-                  Ecto.Changeset.validate_length(changeset, name, is: is).valid?
+                  Ecto.Changeset.validate_length(changeset, name, is: is)
 
                 {:in, data} ->
-                  Ecto.Changeset.validate_inclusion(changeset, name, data).valid?
+                  Ecto.Changeset.validate_inclusion(changeset, name, data)
 
                 {:not_in, data} ->
-                  Ecto.Changeset.validate_exclusion(changeset, name, data).valid?
+                  Ecto.Changeset.validate_exclusion(changeset, name, data)
 
                 {:less_than, number} ->
-                  Ecto.Changeset.validate_number(changeset, name, less_than: number).valid?
+                  Ecto.Changeset.validate_number(changeset, name, less_than: number)
 
                 {:greater_than, number} ->
-                  Ecto.Changeset.validate_number(changeset, name, greater_than: number).valid?
+                  Ecto.Changeset.validate_number(changeset, name, greater_than: number)
 
                 {:less_than_or_equal_to, number} ->
-                  Ecto.Changeset.validate_number(changeset, name, less_than_or_equal_to: number).valid?
+                  Ecto.Changeset.validate_number(changeset, name, less_than_or_equal_to: number)
 
                 {:greater_than_or_equal_to, number} ->
-                  Ecto.Changeset.validate_number(changeset, name, greater_than_or_equal_to: number).valid?
+                  Ecto.Changeset.validate_number(changeset, name, greater_than_or_equal_to: number)
 
                 {:equal_to, number} ->
-                  Ecto.Changeset.validate_number(changeset, name, equal_to: number).valid?
+                  Ecto.Changeset.validate_number(changeset, name, equal_to: number)
 
                 {:not_equal_to, number} ->
-                  Ecto.Changeset.validate_number(changeset, name, not_equal_to: number).valid?
+                  Ecto.Changeset.validate_number(changeset, name, not_equal_to: number)
 
                 {:acceptance, true} ->
-                  Ecto.Changeset.validate_acceptance(changeset, name).valid?
+                  Ecto.Changeset.validate_acceptance(changeset, name)
 
                 {:confirmation, true} ->
-                  Ecto.Changeset.validate_confirmation(changeset, name).valid?
+                  Ecto.Changeset.validate_confirmation(changeset, name)
 
                 {:subset, subset} ->
-                  Ecto.Changeset.validate_subset(changeset, name, subset).valid?
+                  Ecto.Changeset.validate_subset(changeset, name, subset)
 
                 _ ->
-                  true
+                  changeset
               end
             end)
           end)
 
-        form |> Map.put(:valid?, valid)
+        form |> Map.put(:valid?, changeset.valid?)
       end
     end
   end
