@@ -26,13 +26,18 @@ defmodule SmartForm do
       def validate(form, params) do
         changeset = changeset(form, params)
 
-        name_and_opt =
+        # Create a list of tuples with the field name and the opt for each option
+        # Ie. the definition
+        #   field :email, :string, format: ~r/@/, required: true
+        # will be converted to
+        #   [email: {:format, ~r/@/}, email: {:required, true}]
+        name_and_opt_list =
           __fields()
           |> Enum.map(fn {name, _, opts} -> Enum.map(opts, fn opt -> {name, opt} end) end)
 
         # Apply validations
         changeset =
-          name_and_opt
+          name_and_opt_list
           |> Enum.reduce(changeset, fn opts, changeset ->
             Enum.reduce(opts, changeset, fn {name, opt}, changeset ->
               case opt do
