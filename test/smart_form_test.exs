@@ -151,4 +151,71 @@ defmodule SmartFormTest do
       assert form.valid?
     end
   end
+
+  defmodule LengthValidationForm do
+    use SmartForm
+
+    fields do
+      field :username, :string, max: 8
+      field :password, :string, min: 3
+      field :initials, :string, is: 2
+      field :name, :string, min: 3, max: 116
+    end
+  end
+
+  describe "length validation" do
+    test "should validate the max length of a string" do
+      user = %User{}
+
+      form =
+        LengthValidationForm.new(user)
+        |> LengthValidationForm.validate(%{"username" => "marie"})
+
+      assert form.valid?
+
+      form =
+        LengthValidationForm.new(user)
+        |> LengthValidationForm.validate(%{"username" => "mariecurie"})
+
+      refute form.valid?
+    end
+
+    test "should validate the min length of a string" do
+      user = %User{}
+
+      form =
+        LengthValidationForm.new(user)
+        |> LengthValidationForm.validate(%{"password" => "12"})
+
+      refute form.valid?
+
+      form =
+        LengthValidationForm.new(user)
+        |> LengthValidationForm.validate(%{"password" => "123"})
+
+      assert form.valid?
+    end
+
+    test "should validate the exact length of a string" do
+      user = %User{}
+
+      form =
+        LengthValidationForm.new(user)
+        |> LengthValidationForm.validate(%{"initials" => "M"})
+
+      refute form.valid?
+
+      form =
+        LengthValidationForm.new(user)
+        |> LengthValidationForm.validate(%{"initials" => "MCA"})
+
+      refute form.valid?
+
+      form =
+        LengthValidationForm.new(user)
+        |> LengthValidationForm.validate(%{"initials" => "MC"})
+
+      assert form.valid?
+    end
+  end
 end

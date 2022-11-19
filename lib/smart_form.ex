@@ -40,6 +40,15 @@ defmodule SmartForm do
                 {:format, format} ->
                   Ecto.Changeset.validate_format(changeset, name, format).valid?
 
+                {:min, min} ->
+                  Ecto.Changeset.validate_length(changeset, name, min: min).valid?
+
+                {:max, max} ->
+                  Ecto.Changeset.validate_length(changeset, name, max: max).valid?
+
+                {:is, is} ->
+                  Ecto.Changeset.validate_length(changeset, name, is: is).valid?
+
                 _ ->
                   true
               end
