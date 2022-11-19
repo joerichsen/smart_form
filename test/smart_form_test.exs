@@ -4,15 +4,15 @@ defmodule SmartFormTest do
 
   alias SmartForm.User
 
-  defmodule NewUserForm do
-    use SmartForm
-
-    fields do
-      field :firstname, :string
-    end
-  end
-
   describe "new" do
+    defmodule NewUserForm do
+      use SmartForm
+
+      fields do
+        field :firstname, :string
+      end
+    end
+
     test "should accept a struct as an argument and make it the source" do
       user = %User{firstname: "Marie"}
       form = NewUserForm.new(user)
@@ -20,15 +20,15 @@ defmodule SmartFormTest do
     end
   end
 
-  defmodule ValidateUserForm do
-    use SmartForm
-
-    fields do
-      field :firstname, :string, required: true
-    end
-  end
-
   describe "validate" do
+    defmodule ValidateUserForm do
+      use SmartForm
+
+      fields do
+        field :firstname, :string, required: true
+      end
+    end
+
     test "should return true if the form is valid" do
       user = %User{}
 
@@ -50,16 +50,16 @@ defmodule SmartFormTest do
     end
   end
 
-  defmodule MultipleValidationsUserForm do
-    use SmartForm
-
-    fields do
-      field :firstname, :string, required: true
-      field :email, :string, format: ~r/@/, required: true
-    end
-  end
-
   describe "multiple validations" do
+    defmodule MultipleValidationsUserForm do
+      use SmartForm
+
+      fields do
+        field :firstname, :string, required: true
+        field :email, :string, format: ~r/@/, required: true
+      end
+    end
+
     test "should validate multiple fields" do
       user = %User{}
 
@@ -92,15 +92,15 @@ defmodule SmartFormTest do
     end
   end
 
-  defmodule ValidateRequiredUserForm do
-    use SmartForm
-
-    fields do
-      field :firstname, :string, required: true
-    end
-  end
-
   describe "validation of required fields" do
+    defmodule ValidateRequiredUserForm do
+      use SmartForm
+
+      fields do
+        field :firstname, :string, required: true
+      end
+    end
+
     test "should return true if the form is valid" do
       user = %User{}
 
@@ -122,15 +122,15 @@ defmodule SmartFormTest do
     end
   end
 
-  defmodule ValidateFormatUserForm do
-    use SmartForm
-
-    fields do
-      field :email, :string, format: ~r/@/
-    end
-  end
-
   describe "format validations" do
+    defmodule ValidateFormatUserForm do
+      use SmartForm
+
+      fields do
+        field :email, :string, format: ~r/@/
+      end
+    end
+
     test "should return true if the form is valid" do
       user = %User{}
 
@@ -152,18 +152,18 @@ defmodule SmartFormTest do
     end
   end
 
-  defmodule LengthValidationForm do
-    use SmartForm
-
-    fields do
-      field :username, :string, max: 8
-      field :password, :string, min: 3
-      field :initials, :string, is: 2
-      field :name, :string, min: 3, max: 116
-    end
-  end
-
   describe "length validation" do
+    defmodule LengthValidationForm do
+      use SmartForm
+
+      fields do
+        field :username, :string, max: 8
+        field :password, :string, min: 3
+        field :initials, :string, is: 2
+        field :name, :string, min: 3, max: 116
+      end
+    end
+
     test "should validate the max length of a string" do
       user = %User{}
 
