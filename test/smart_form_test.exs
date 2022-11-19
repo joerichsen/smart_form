@@ -250,4 +250,36 @@ defmodule SmartFormTest do
       refute form.valid?
     end
   end
+
+  describe "exclusion validation" do
+    defmodule ExclusionValidationForm do
+      use SmartForm
+
+      fields do
+        field :role, :string, not_in: ["admin", "user"]
+      end
+    end
+
+    test "should validate the exclusion of a string" do
+      user = %User{}
+
+      form =
+        ExclusionValidationForm.new(user)
+        |> ExclusionValidationForm.validate(%{"role" => "admin"})
+
+      refute form.valid?
+
+      form =
+        ExclusionValidationForm.new(user)
+        |> ExclusionValidationForm.validate(%{"role" => "user"})
+
+      refute form.valid?
+
+      form =
+        ExclusionValidationForm.new(user)
+        |> ExclusionValidationForm.validate(%{"role" => "guest"})
+
+      assert form.valid?
+    end
+  end
 end

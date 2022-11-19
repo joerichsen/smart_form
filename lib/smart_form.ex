@@ -52,6 +52,9 @@ defmodule SmartForm do
                 {:in, data} ->
                   Ecto.Changeset.validate_inclusion(changeset, name, data).valid?
 
+                {:not_in, data} ->
+                  Ecto.Changeset.validate_exclusion(changeset, name, data).valid?
+
                 _ ->
                   true
               end
