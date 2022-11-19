@@ -18,9 +18,9 @@ defmodule SmartForm do
         %__MODULE__{source: source}
       end
 
-      def changeset(form, params) do
+      def changeset(form, params \\ %{}) do
         types = __fields() |> Enum.map(fn {name, type, _} -> {name, type} end) |> Enum.into(%{})
-        changeset = {form.source, types} |> Ecto.Changeset.cast(params, Map.keys(types))
+        {form.source, types} |> Ecto.Changeset.cast(params, Map.keys(types))
       end
 
       def validate(form, params) do
