@@ -443,4 +443,36 @@ defmodule SmartFormTest do
       assert form.valid?
     end
   end
+
+  describe "confirmation validation" do
+    defmodule ConfirmationValidationForm do
+      use SmartForm
+
+      fields do
+        field :password, :string, confirmation: true
+      end
+    end
+
+    test "should validate the confirmation of a string" do
+      user = %User{}
+
+      form =
+        ConfirmationValidationForm.new(user)
+        |> ConfirmationValidationForm.validate(%{
+          "password" => "123",
+          "password_confirmation" => "XXX"
+        })
+
+      refute form.valid?
+
+      form =
+        ConfirmationValidationForm.new(user)
+        |> ConfirmationValidationForm.validate(%{
+          "password" => "123",
+          "password_confirmation" => "123"
+        })
+
+      assert form.valid?
+    end
+  end
 end
