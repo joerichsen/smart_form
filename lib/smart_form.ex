@@ -73,6 +73,9 @@ defmodule SmartForm do
                 {:not_equal_to, number} ->
                   Ecto.Changeset.validate_number(changeset, name, not_equal_to: number).valid?
 
+                {:acceptance, true} ->
+                  Ecto.Changeset.validate_acceptance(changeset, name).valid?
+
                 _ ->
                   true
               end

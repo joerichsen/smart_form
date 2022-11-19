@@ -417,4 +417,30 @@ defmodule SmartFormTest do
       assert form.valid?
     end
   end
+
+  describe "acceptance validation" do
+    defmodule AcceptanceValidationForm do
+      use SmartForm
+
+      fields do
+        field :terms, :boolean, acceptance: true
+      end
+    end
+
+    test "should validate the acceptance of a boolean" do
+      user = %User{}
+
+      form =
+        AcceptanceValidationForm.new(user)
+        |> AcceptanceValidationForm.validate(%{"terms" => false})
+
+      refute form.valid?
+
+      form =
+        AcceptanceValidationForm.new(user)
+        |> AcceptanceValidationForm.validate(%{"terms" => true})
+
+      assert form.valid?
+    end
+  end
 end
