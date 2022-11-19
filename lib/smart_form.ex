@@ -79,6 +79,9 @@ defmodule SmartForm do
                 {:confirmation, true} ->
                   Ecto.Changeset.validate_confirmation(changeset, name).valid?
 
+                {:subset, subset} ->
+                  Ecto.Changeset.validate_subset(changeset, name, subset).valid?
+
                 _ ->
                   true
               end

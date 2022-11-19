@@ -475,4 +475,30 @@ defmodule SmartFormTest do
       assert form.valid?
     end
   end
+
+  describe "subset validation" do
+    defmodule SubsetValidationForm do
+      use SmartForm
+
+      fields do
+        field :roles, {:array, :string}, subset: ["admin", "user"]
+      end
+    end
+
+    test "should validate the subset of an list" do
+      user = %User{}
+
+      form =
+        SubsetValidationForm.new(user)
+        |> SubsetValidationForm.validate(%{"roles" => ["admin", "user"]})
+
+      assert form.valid?
+
+      form =
+        SubsetValidationForm.new(user)
+        |> SubsetValidationForm.validate(%{"roles" => ["admin", "user", "guest"]})
+
+      refute form.valid?
+    end
+  end
 end
