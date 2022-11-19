@@ -8,6 +8,17 @@ defmodule SmartForm do
     end
   end
 
+  # Functions for extracting the field name, type, and options
+  defp name_type_and_opts({:field, _, [name, type, opts]}) do
+    {opts, _} = Code.eval_quoted(opts)
+    [{name, type, opts}]
+  end
+
+  defp name_type_and_opts({:field, _, [name, type]}), do: [{name, type, nil}]
+
+  defp name_type_and_opts({:__block__, _, fields}),
+    do: fields |> Enum.flat_map(&name_type_and_opts(&1))
+
   defmacro __using__(_) do
     quote do
       import SmartForm, only: [fields: 1]
@@ -99,14 +110,4 @@ defmodule SmartForm do
       end
     end
   end
-
-  def name_type_and_opts({:field, _, [name, type, opts]}) do
-    {opts, _} = Code.eval_quoted(opts)
-    [{name, type, opts}]
-  end
-
-  def name_type_and_opts({:field, _, [name, type]}), do: [{name, type, nil}]
-
-  def name_type_and_opts({:__block__, _, fields}),
-    do: fields |> Enum.flat_map(&name_type_and_opts(&1))
 end
