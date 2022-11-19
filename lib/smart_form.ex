@@ -55,6 +55,24 @@ defmodule SmartForm do
                 {:not_in, data} ->
                   Ecto.Changeset.validate_exclusion(changeset, name, data).valid?
 
+                {:less_than, number} ->
+                  Ecto.Changeset.validate_number(changeset, name, less_than: number).valid?
+
+                {:greater_than, number} ->
+                  Ecto.Changeset.validate_number(changeset, name, greater_than: number).valid?
+
+                {:less_than_or_equal_to, number} ->
+                  Ecto.Changeset.validate_number(changeset, name, less_than_or_equal_to: number).valid?
+
+                {:greater_than_or_equal_to, number} ->
+                  Ecto.Changeset.validate_number(changeset, name, greater_than_or_equal_to: number).valid?
+
+                {:equal_to, number} ->
+                  Ecto.Changeset.validate_number(changeset, name, equal_to: number).valid?
+
+                {:not_equal_to, number} ->
+                  Ecto.Changeset.validate_number(changeset, name, not_equal_to: number).valid?
+
                 _ ->
                   true
               end

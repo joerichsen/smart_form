@@ -282,4 +282,139 @@ defmodule SmartFormTest do
       assert form.valid?
     end
   end
+
+  describe "number validation" do
+    defmodule NumberValidationForm do
+      use SmartForm
+
+      fields do
+        field :age, :integer, greater_than: 18
+        field :height, :float, greater_than_or_equal_to: 1.5
+        field :weight, :float, less_than: 100
+        field :temperature, :float, less_than_or_equal_to: 37.5
+        field :score, :integer, equal_to: 100
+        field :length, :integer, not_equal_to: 5.0
+      end
+    end
+
+    test "should validate the greater than of a number" do
+      user = %User{}
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"age" => 18})
+
+      refute form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"age" => 19})
+
+      assert form.valid?
+    end
+
+    test "should validate the greater than or equal to of a number" do
+      user = %User{}
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"height" => 1.4})
+
+      refute form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"height" => 1.5})
+
+      assert form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"height" => 1.6})
+
+      assert form.valid?
+    end
+
+    test "should validate the less than of a number" do
+      user = %User{}
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"weight" => 100})
+
+      refute form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"weight" => 99})
+
+      assert form.valid?
+    end
+
+    test "should validate the less than or equal to of a number" do
+      user = %User{}
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"temperature" => 37.6})
+
+      refute form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"temperature" => 37.5})
+
+      assert form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"temperature" => 37.4})
+
+      assert form.valid?
+    end
+
+    test "should validate equal to a number" do
+      user = %User{}
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"score" => 99})
+
+      refute form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"score" => 100.0})
+
+      refute form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"score" => 100})
+
+      assert form.valid?
+    end
+
+    test "should validate not equal to a number" do
+      user = %User{}
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"length" => 5})
+
+      refute form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"length" => 5.0})
+
+      refute form.valid?
+
+      form =
+        NumberValidationForm.new(user)
+        |> NumberValidationForm.validate(%{"length" => 6})
+
+      assert form.valid?
+    end
+  end
 end
