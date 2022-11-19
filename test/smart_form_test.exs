@@ -50,66 +50,6 @@ defmodule SmartFormTest do
     end
   end
 
-  defmodule ValidateRequiredUserForm do
-    use SmartForm
-
-    fields do
-      field :firstname, :string, required: true
-    end
-  end
-
-  describe "validate_required" do
-    test "should return true if the form is valid" do
-      user = %User{}
-
-      form =
-        ValidateRequiredUserForm.new(user)
-        |> ValidateRequiredUserForm.validate(%{"firstname" => "Marie"})
-
-      assert form.valid? == true
-    end
-
-    test "should return false if the form is invalid" do
-      user = %User{}
-
-      form =
-        ValidateRequiredUserForm.new(user)
-        |> ValidateRequiredUserForm.validate(%{"firstname" => ""})
-
-      refute form.valid?
-    end
-  end
-
-  defmodule ValidateFormatUserForm do
-    use SmartForm
-
-    fields do
-      field :email, :string, format: ~r/@/
-    end
-  end
-
-  describe "validate_format" do
-    test "should return true if the form is valid" do
-      user = %User{}
-
-      form =
-        ValidateFormatUserForm.new(user)
-        |> ValidateFormatUserForm.validate(%{"email" => "marie@example.com"})
-
-      assert form.valid? == true
-    end
-
-    test "should return false if the form is invalid" do
-      user = %User{}
-
-      form =
-        ValidateFormatUserForm.new(user)
-        |> ValidateFormatUserForm.validate(%{"email" => "marie"})
-
-      refute form.valid?
-    end
-  end
-
   defmodule MultipleValidationsUserForm do
     use SmartForm
 
@@ -149,6 +89,66 @@ defmodule SmartFormTest do
         })
 
       assert form.valid?
+    end
+  end
+
+  defmodule ValidateRequiredUserForm do
+    use SmartForm
+
+    fields do
+      field :firstname, :string, required: true
+    end
+  end
+
+  describe "validation of required fields" do
+    test "should return true if the form is valid" do
+      user = %User{}
+
+      form =
+        ValidateRequiredUserForm.new(user)
+        |> ValidateRequiredUserForm.validate(%{"firstname" => "Marie"})
+
+      assert form.valid? == true
+    end
+
+    test "should return false if the form is invalid" do
+      user = %User{}
+
+      form =
+        ValidateRequiredUserForm.new(user)
+        |> ValidateRequiredUserForm.validate(%{"firstname" => ""})
+
+      refute form.valid?
+    end
+  end
+
+  defmodule ValidateFormatUserForm do
+    use SmartForm
+
+    fields do
+      field :email, :string, format: ~r/@/
+    end
+  end
+
+  describe "format validations" do
+    test "should return true if the form is valid" do
+      user = %User{}
+
+      form =
+        ValidateFormatUserForm.new(user)
+        |> ValidateFormatUserForm.validate(%{"email" => "marie@example.com"})
+
+      assert form.valid? == true
+    end
+
+    test "should return false if the form is invalid" do
+      user = %User{}
+
+      form =
+        ValidateFormatUserForm.new(user)
+        |> ValidateFormatUserForm.validate(%{"email" => "marie"})
+
+      refute form.valid?
     end
   end
 
