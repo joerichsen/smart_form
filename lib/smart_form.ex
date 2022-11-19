@@ -19,7 +19,9 @@ defmodule SmartForm do
       end
 
       def changeset(form, params \\ %{}) do
-        types = __fields() |> Enum.map(fn {name, type, _} -> {name, type} end) |> Enum.into(%{})
+        types =
+          __fields() |> Enum.map(fn {name, type, _opts} -> {name, type} end) |> Enum.into(%{})
+
         {form.source, types} |> Ecto.Changeset.cast(params, Map.keys(types))
       end
 
@@ -33,7 +35,7 @@ defmodule SmartForm do
         #   [email: {:format, ~r/@/}, email: {:required, true}]
         name_and_opt_list =
           __fields()
-          |> Enum.map(fn {name, _, opts} -> Enum.map(opts, fn opt -> {name, opt} end) end)
+          |> Enum.map(fn {name, _type, opts} -> Enum.map(opts, fn opt -> {name, opt} end) end)
 
         # Apply validations
         changeset =
