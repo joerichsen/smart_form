@@ -23,10 +23,24 @@ defmodule SmartForm do
     quote do
       import SmartForm, only: [fields: 1]
 
-      defstruct source: nil, valid?: nil
+      defstruct source: nil, valid?: nil, data: nil
 
       def new(source) do
-        %__MODULE__{source: source}
+        # Create a new map with a key for each field and the value from the source
+        data =
+          __fields()
+          |> Enum.map(fn {name, _type, opts} ->
+            get_function = opts && Keyword.get(opts, :get)
+
+            if get_function do
+              {name, apply(__MODULE__, get_function, [name, source])}
+            else
+              {name, Map.get(source, name)}
+            end
+          end)
+          |> Enum.into(%{})
+
+        %__MODULE__{source: source, data: data}
       end
 
       def changeset(form, params \\ %{}) do

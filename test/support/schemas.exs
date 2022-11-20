@@ -4,6 +4,7 @@ defmodule SmartForm.User do
   use Ecto.Schema
 
   schema "users" do
-    field(:firstname, :string)
+    field :firstname, :string
+    field :birthday, :date
   end
 end
