@@ -8,3 +8,16 @@ defmodule SmartForm.User do
     field :birthday, :date
   end
 end
+
+defmodule SmartForm.Book do
+  @moduledoc false
+
+  use Ecto.Schema
+
+  schema "books" do
+    field :title, :string
+    field :author, :string
+    field :price_cents, :integer
+    field :price_currency, :string
+  end
+end
