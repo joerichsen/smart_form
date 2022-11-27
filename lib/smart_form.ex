@@ -43,7 +43,7 @@ defmodule SmartForm do
         %__MODULE__{source: source, data: data}
       end
 
-      def changeset(form, params \\ %{}) do
+      def form_changeset(form, params \\ %{}) do
         types =
           __fields() |> Enum.map(fn {name, type, _opts} -> {name, type} end) |> Enum.into(%{})
 
@@ -51,7 +51,7 @@ defmodule SmartForm do
       end
 
       def validate(form, params) do
-        changeset = changeset(form, params)
+        changeset = form_changeset(form, params)
 
         # Create a list of tuples with the field name and the opt for each option
         # Ie. the definition
