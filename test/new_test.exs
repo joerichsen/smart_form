@@ -18,5 +18,11 @@ defmodule NewTest do
       form = NewUserForm.new(user)
       assert form.source == user
     end
+
+    test "should accept a struct as an argument and make it the source and an additional argument with the context" do
+      user = %User{firstname: "Marie"}
+      form = NewUserForm.new(user, %{})
+      assert form.source == user
+    end
   end
 end

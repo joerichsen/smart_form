@@ -25,7 +25,7 @@ defmodule SmartForm do
 
       defstruct source: nil, valid?: nil, data: nil
 
-      def new(source) do
+      def new(source, context \\ %{}) do
         # Create a new map with a key for each field and the value from the source
         data =
           __fields()
