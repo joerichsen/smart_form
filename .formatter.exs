@@ -1,6 +1,11 @@
 locals_without_parens = [
   field: 2,
-  field: 3
+  field: 3,
+  create: :*,
+  add: :*,
+  belongs_to: :*,
+  has_many: :*,
+  table: :*
 ]
 
 [
