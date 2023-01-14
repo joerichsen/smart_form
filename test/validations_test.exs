@@ -485,4 +485,38 @@ defmodule ValidationsTest do
       refute form.valid?
     end
   end
+
+  describe "custom validation" do
+    defmodule CustomValidationForm do
+      use SmartForm
+
+      form do
+        field :name, :string, validate: :name_must_be_john
+      end
+
+      def name_must_be_john(_changeset, :name, value) do
+        if value == "John" do
+          []
+        else
+          [name: "is not John"]
+        end
+      end
+    end
+
+    test "should validate the custom validation" do
+      user = %User{}
+
+      form =
+        CustomValidationForm.new(user)
+        |> CustomValidationForm.validate(%{"name" => "John"})
+
+      assert form.valid?
+
+      form =
+        CustomValidationForm.new(user)
+        |> CustomValidationForm.validate(%{"name" => "Jane"})
+
+      refute form.valid?
+    end
+  end
 end
