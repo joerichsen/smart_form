@@ -64,7 +64,9 @@ defmodule SmartForm do
         #   [email: {:format, ~r/@/}, email: {:required, true}]
         name_and_opt_list =
           __fields()
-          |> Enum.flat_map(fn {name, _type, opts} -> Enum.map(opts, fn opt -> {name, opt} end) end)
+          |> Enum.flat_map(fn {name, _type, opts} ->
+            (opts && Enum.map(opts, fn opt -> {name, opt} end)) || []
+          end)
 
         # Apply validations
         changeset =

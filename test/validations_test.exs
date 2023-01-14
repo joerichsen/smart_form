@@ -589,4 +589,24 @@ defmodule ValidationsTest do
       assert form.errors == [name: {"can't be blank", [validation: :required]}]
     end
   end
+
+  describe "with no validations" do
+    defmodule NoValidationsForm do
+      use SmartForm
+
+      form do
+        field :name, :string
+      end
+    end
+
+    test "should be valid" do
+      user = %User{}
+
+      form =
+        NoValidationsForm.new(user)
+        |> NoValidationsForm.validate(%{"name" => "John"})
+
+      assert form.valid?
+    end
+  end
 end
