@@ -50,6 +50,10 @@ defmodule SmartForm do
         {form.source, types} |> Ecto.Changeset.cast(params, Map.keys(types))
       end
 
+      def changeset(form) do
+        form_changeset(form, form.params)
+      end
+
       def validate(form, params) do
         changeset = form_changeset(form, params)
 
@@ -127,7 +131,10 @@ defmodule SmartForm do
             end
           end)
 
-        form |> Map.put(:valid?, changeset.valid?) |> Map.put(:errors, changeset.errors)
+        form
+        |> Map.put(:valid?, changeset.valid?)
+        |> Map.put(:errors, changeset.errors)
+        |> Map.put(:params, params)
       end
     end
   end
