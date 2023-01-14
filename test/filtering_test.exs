@@ -9,7 +9,7 @@ defmodule FilteringTest do
       use SmartForm
 
       form do
-        field :title, :string, required: true
+        field :title, :string
       end
     end
 

@@ -9,7 +9,7 @@ defmodule ChangesetTest do
       use SmartForm
 
       form do
-        field :firstname, :string, required: true
+        field :firstname, :string
       end
     end
 
