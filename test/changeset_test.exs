@@ -26,5 +26,20 @@ defmodule ChangesetTest do
 
       assert TestRepo.get(User, lisa.id).firstname == "Lisa"
     end
+
+    test "should return a changeset applied to the source that can be updated in the database" do
+      marie = %User{firstname: "Marie"}
+      marie = TestRepo.insert!(marie)
+
+      changeset =
+        marie
+        |> ChangesetForm.new()
+        |> ChangesetForm.validate(%{"firstname" => "Lisa"})
+        |> ChangesetForm.changeset()
+
+      lisa = TestRepo.update!(changeset)
+
+      assert TestRepo.get(User, lisa.id).firstname == "Lisa"
+    end
   end
 end
