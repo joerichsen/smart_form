@@ -1,5 +1,5 @@
 defmodule SmartForm do
-  defmacro fields(do: fields) do
+  defmacro form(do: fields) do
     fields = name_type_and_opts(fields)
 
     quote do
@@ -21,7 +21,7 @@ defmodule SmartForm do
 
   defmacro __using__(_) do
     quote do
-      import SmartForm, only: [fields: 1]
+      import SmartForm, only: [form: 1]
 
       defstruct source: nil, valid?: nil, data: nil
 

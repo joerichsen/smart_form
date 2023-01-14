@@ -16,7 +16,7 @@ SmartForm is a hex package to make working with forms in [Phoenix LiveView](http
 defmodule Form do
   use SmartForm
 
-  fields do
+  form do
     field :name, :string, validate: :required
   end
 end

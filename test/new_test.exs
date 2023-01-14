@@ -8,7 +8,7 @@ defmodule NewTest do
     defmodule NewUserForm do
       use SmartForm
 
-      fields do
+      form do
         field :firstname, :string
       end
     end
