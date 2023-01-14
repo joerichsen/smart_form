@@ -569,4 +569,24 @@ defmodule ValidationsTest do
       refute form.valid?
     end
   end
+
+  describe "error messages" do
+    defmodule ErrorMessagesForm do
+      use SmartForm
+
+      form do
+        field :name, :string, required: true
+      end
+    end
+
+    test "should return the error messages" do
+      user = %User{}
+
+      form =
+        ErrorMessagesForm.new(user)
+        |> ErrorMessagesForm.validate(%{})
+
+      assert form.errors == [name: {"can't be blank", [validation: :required]}]
+    end
+  end
 end

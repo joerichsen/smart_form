@@ -127,7 +127,7 @@ defmodule SmartForm do
             end
           end)
 
-        form |> Map.put(:valid?, changeset.valid?)
+        form |> Map.put(:valid?, changeset.valid?) |> Map.put(:errors, changeset.errors)
       end
     end
   end
