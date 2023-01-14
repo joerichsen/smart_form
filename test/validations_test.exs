@@ -519,4 +519,54 @@ defmodule ValidationsTest do
       refute form.valid?
     end
   end
+
+  describe "multiple custom validations" do
+    defmodule MultipleCustomValidationForm do
+      use SmartForm
+
+      form do
+        field :name, :string,
+          validate: :name_must_include_john,
+          validate: :name_must_be_longer_than_5
+      end
+
+      def name_must_include_john(_changeset, :name, value) do
+        if String.contains?(value, "John") do
+          []
+        else
+          [name: "must include John"]
+        end
+      end
+
+      def name_must_be_longer_than_5(_changeset, :name, value) do
+        if String.length(value) > 5 do
+          []
+        else
+          [name: "must be longer than 5"]
+        end
+      end
+    end
+
+    test "should validate the custom validation" do
+      user = %User{}
+
+      form =
+        MultipleCustomValidationForm.new(user)
+        |> MultipleCustomValidationForm.validate(%{"name" => "John Doe"})
+
+      assert form.valid?
+
+      form =
+        MultipleCustomValidationForm.new(user)
+        |> MultipleCustomValidationForm.validate(%{"name" => "John"})
+
+      refute form.valid?
+
+      form =
+        MultipleCustomValidationForm.new(user)
+        |> MultipleCustomValidationForm.validate(%{"name" => "Jane Doe"})
+
+      refute form.valid?
+    end
+  end
 end
