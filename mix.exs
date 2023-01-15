@@ -7,7 +7,11 @@ defmodule SmartForm.MixProject do
       version: "0.1.0",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+
+      # Hex
+      description: "SmartForm is a small DSL built on top of Ecto.Changeset to help you build forms.",
+      package: package(),
     ]
   end
 
@@ -24,6 +28,14 @@ defmodule SmartForm.MixProject do
       {:phoenix_html, ">= 3.2.0"},
       {:ecto, ">= 3.9.1"},
       {:ecto_sqlite3, "~> 0.8.2", only: [:dev, :test]}
+    ]
+  end
+
+  def package do
+    [
+      maintainers: ["Jørgen Orehøj Erichsen"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => @source_url},
     ]
   end
 end
