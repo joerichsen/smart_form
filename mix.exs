@@ -1,6 +1,9 @@
 defmodule SmartForm.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/joerichsen/smart_form"
+  @version "0.1.0"
+
   def project do
     [
       app: :smart_form,
@@ -13,6 +16,8 @@ defmodule SmartForm.MixProject do
       description:
         "SmartForm is a small DSL built on top of Ecto.Changeset to help you build forms.",
       package: package(),
+
+      name: "SmartForm",
       docs: docs()
     ]
   end
