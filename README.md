@@ -1,6 +1,6 @@
 # SmartForm
 
-SmartForm is a hex package which aims to make working with forms in [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view) easy and simple while at the same time support complex forms.
+SmartForm is a small DSL built on top of Ecto which aims to make working with forms in [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view) easy and simple while at the same time support complex forms.
 
 ## Features
 
@@ -21,6 +21,7 @@ defmodule Form do
 
   smart_form do
     field :name, :string, validate: :required
+    field :email, :string, validate: :required, format: ~r/@/
   end
 end
 ```
