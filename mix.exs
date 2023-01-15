@@ -11,6 +11,7 @@ defmodule SmartForm.MixProject do
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      consolidate_protocols: Mix.env() != :test,
 
       # Hex
       description:
