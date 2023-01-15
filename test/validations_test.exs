@@ -8,7 +8,7 @@ defmodule ValidationsTest do
     defmodule ValidateUserForm do
       use SmartForm
 
-      fields do
+      form do
         field :firstname, :string, required: true
       end
     end
@@ -38,7 +38,7 @@ defmodule ValidationsTest do
     defmodule MultipleValidationsUserForm do
       use SmartForm
 
-      fields do
+      form do
         field :firstname, :string, required: true
         field :email, :string, format: ~r/@/, required: true
       end
@@ -80,7 +80,7 @@ defmodule ValidationsTest do
     defmodule ValidateRequiredUserForm do
       use SmartForm
 
-      fields do
+      form do
         field :firstname, :string, required: true
       end
     end
@@ -110,7 +110,7 @@ defmodule ValidationsTest do
     defmodule ValidateFormatUserForm do
       use SmartForm
 
-      fields do
+      form do
         field :email, :string, format: ~r/@/
       end
     end
@@ -140,7 +140,7 @@ defmodule ValidationsTest do
     defmodule LengthValidationForm do
       use SmartForm
 
-      fields do
+      form do
         field :username, :string, max: 8
         field :password, :string, min: 3
         field :initials, :string, is: 2
@@ -207,7 +207,7 @@ defmodule ValidationsTest do
     defmodule InclusionValidationForm do
       use SmartForm
 
-      fields do
+      form do
         field :role, :string, in: ["admin", "user"]
       end
     end
@@ -239,7 +239,7 @@ defmodule ValidationsTest do
     defmodule ExclusionValidationForm do
       use SmartForm
 
-      fields do
+      form do
         field :role, :string, not_in: ["admin", "user"]
       end
     end
@@ -271,7 +271,7 @@ defmodule ValidationsTest do
     defmodule NumberValidationForm do
       use SmartForm
 
-      fields do
+      form do
         field :age, :integer, greater_than: 18
         field :height, :float, greater_than_or_equal_to: 1.5
         field :weight, :float, less_than: 100
@@ -406,7 +406,7 @@ defmodule ValidationsTest do
     defmodule AcceptanceValidationForm do
       use SmartForm
 
-      fields do
+      form do
         field :terms, :boolean, acceptance: true
       end
     end
@@ -432,7 +432,7 @@ defmodule ValidationsTest do
     defmodule ConfirmationValidationForm do
       use SmartForm
 
-      fields do
+      form do
         field :password, :string, confirmation: true
       end
     end
@@ -464,7 +464,7 @@ defmodule ValidationsTest do
     defmodule SubsetValidationForm do
       use SmartForm
 
-      fields do
+      form do
         field :roles, {:array, :string}, subset: ["admin", "user"]
       end
     end
@@ -483,6 +483,130 @@ defmodule ValidationsTest do
         |> SubsetValidationForm.validate(%{"roles" => ["admin", "user", "guest"]})
 
       refute form.valid?
+    end
+  end
+
+  describe "custom validation" do
+    defmodule CustomValidationForm do
+      use SmartForm
+
+      form do
+        field :name, :string, validate: :name_must_be_john
+      end
+
+      def name_must_be_john(_changeset, :name, value) do
+        if value == "John" do
+          []
+        else
+          [name: "is not John"]
+        end
+      end
+    end
+
+    test "should validate the custom validation" do
+      user = %User{}
+
+      form =
+        CustomValidationForm.new(user)
+        |> CustomValidationForm.validate(%{"name" => "John"})
+
+      assert form.valid?
+
+      form =
+        CustomValidationForm.new(user)
+        |> CustomValidationForm.validate(%{"name" => "Jane"})
+
+      refute form.valid?
+    end
+  end
+
+  describe "multiple custom validations" do
+    defmodule MultipleCustomValidationForm do
+      use SmartForm
+
+      form do
+        field :name, :string,
+          validate: :name_must_include_john,
+          validate: :name_must_be_longer_than_5
+      end
+
+      def name_must_include_john(_changeset, :name, value) do
+        if String.contains?(value, "John") do
+          []
+        else
+          [name: "must include John"]
+        end
+      end
+
+      def name_must_be_longer_than_5(_changeset, :name, value) do
+        if String.length(value) > 5 do
+          []
+        else
+          [name: "must be longer than 5"]
+        end
+      end
+    end
+
+    test "should validate the custom validation" do
+      user = %User{}
+
+      form =
+        MultipleCustomValidationForm.new(user)
+        |> MultipleCustomValidationForm.validate(%{"name" => "John Doe"})
+
+      assert form.valid?
+
+      form =
+        MultipleCustomValidationForm.new(user)
+        |> MultipleCustomValidationForm.validate(%{"name" => "John"})
+
+      refute form.valid?
+
+      form =
+        MultipleCustomValidationForm.new(user)
+        |> MultipleCustomValidationForm.validate(%{"name" => "Jane Doe"})
+
+      refute form.valid?
+    end
+  end
+
+  describe "error messages" do
+    defmodule ErrorMessagesForm do
+      use SmartForm
+
+      form do
+        field :name, :string, required: true
+      end
+    end
+
+    test "should return the error messages" do
+      user = %User{}
+
+      form =
+        ErrorMessagesForm.new(user)
+        |> ErrorMessagesForm.validate(%{})
+
+      assert form.errors == [name: {"can't be blank", [validation: :required]}]
+    end
+  end
+
+  describe "with no validations" do
+    defmodule NoValidationsForm do
+      use SmartForm
+
+      form do
+        field :name, :string
+      end
+    end
+
+    test "should be valid" do
+      user = %User{}
+
+      form =
+        NoValidationsForm.new(user)
+        |> NoValidationsForm.validate(%{"name" => "John"})
+
+      assert form.valid?
     end
   end
 end

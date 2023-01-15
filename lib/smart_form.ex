@@ -1,5 +1,5 @@
 defmodule SmartForm do
-  defmacro fields(do: fields) do
+  defmacro form(do: fields) do
     fields = name_type_and_opts(fields)
 
     quote do
@@ -21,11 +21,11 @@ defmodule SmartForm do
 
   defmacro __using__(_) do
     quote do
-      import SmartForm, only: [fields: 1]
+      import SmartForm, only: [form: 1]
 
       defstruct source: nil, valid?: nil, data: nil
 
-      def new(source) do
+      def new(source, context \\ %{}) do
         # Create a new map with a key for each field and the value from the source
         data =
           __fields()
@@ -43,15 +43,19 @@ defmodule SmartForm do
         %__MODULE__{source: source, data: data}
       end
 
-      def changeset(form, params \\ %{}) do
+      def form_changeset(form, params \\ %{}) do
         types =
           __fields() |> Enum.map(fn {name, type, _opts} -> {name, type} end) |> Enum.into(%{})
 
         {form.source, types} |> Ecto.Changeset.cast(params, Map.keys(types))
       end
 
+      def changeset(form) do
+        form_changeset(form, form.params)
+      end
+
       def validate(form, params) do
-        changeset = changeset(form, params)
+        changeset = form_changeset(form, params)
 
         # Create a list of tuples with the field name and the opt for each option
         # Ie. the definition
@@ -60,7 +64,9 @@ defmodule SmartForm do
         #   [email: {:format, ~r/@/}, email: {:required, true}]
         name_and_opt_list =
           __fields()
-          |> Enum.flat_map(fn {name, _type, opts} -> Enum.map(opts, fn opt -> {name, opt} end) end)
+          |> Enum.flat_map(fn {name, _type, opts} ->
+            (opts && Enum.map(opts, fn opt -> {name, opt} end)) || []
+          end)
 
         # Apply validations
         changeset =
@@ -115,12 +121,22 @@ defmodule SmartForm do
               {:subset, subset} ->
                 Ecto.Changeset.validate_subset(changeset, name, subset)
 
+              {:validate, validation_function} ->
+                value = Ecto.Changeset.get_field(changeset, name)
+
+                validate_change(changeset, name, fn name, value ->
+                  apply(__MODULE__, validation_function, [changeset, name, value])
+                end)
+
               _ ->
                 changeset
             end
           end)
 
-        form |> Map.put(:valid?, changeset.valid?)
+        form
+        |> Map.put(:valid?, changeset.valid?)
+        |> Map.put(:errors, changeset.errors)
+        |> Map.put(:params, params)
       end
     end
   end

@@ -8,7 +8,7 @@ defmodule GetSetCastTest do
     defmodule GetBirthdayForm do
       use SmartForm
 
-      fields do
+      form do
         field :birthday, :date, get: :localized_date
       end
 
@@ -27,7 +27,7 @@ defmodule GetSetCastTest do
     defmodule GetPriceForm do
       use SmartForm
 
-      fields do
+      form do
         field :price, :string, get: :localized_price
       end
 

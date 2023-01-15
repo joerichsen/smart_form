@@ -8,7 +8,7 @@ defmodule NewTest do
     defmodule NewUserForm do
       use SmartForm
 
-      fields do
+      form do
         field :firstname, :string
       end
     end
@@ -16,6 +16,12 @@ defmodule NewTest do
     test "should accept a struct as an argument and make it the source" do
       user = %User{firstname: "Marie"}
       form = NewUserForm.new(user)
+      assert form.source == user
+    end
+
+    test "should accept a struct as an argument and make it the source and an additional argument with the context" do
+      user = %User{firstname: "Marie"}
+      form = NewUserForm.new(user, %{})
       assert form.source == user
     end
   end
