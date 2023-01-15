@@ -4,7 +4,7 @@ SmartForm is a small DSL built on top of Ecto which aims to make working with fo
 
 ## Features
 
-* field definitions and validations in the same spot
+* field definitions and validations (including custom validations) in the same spot
 * non-trivial mappings between source data and the form data are supported
 
 ## TODO
@@ -29,6 +29,8 @@ end
 Check out the full "Hello World" example [here](https://github.com/joerichsen/smart_form_examples/blob/main/lib/smart_form_examples_web/live/hello_world.ex).
 
 More examples can be found in the [SmartForm Examples repo](https://github.com/joerichsen/smart_form_examples/)
+
+Furthermore, looking at the tests in this repo could be useful while the documentation is not fully in place.
 
 ## Installation
 
