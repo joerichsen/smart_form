@@ -1,13 +1,16 @@
 # SmartForm
 
-SmartForm is a hex package to make working with forms in [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view) easy and simple while at the same time support complex forms.
+SmartForm is a hex package which aims to make working with forms in [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view) easy and simple while at the same time support complex forms.
 
 ## Features
 
 * field definitions and validations in the same spot
-* working with nested data is a breeze
 * non-trivial mappings between source data and the form data are supported
+
+## TODO
+
 * partial validation
+* working with nested data is a breeze
 
 ## Example
 
@@ -20,9 +23,11 @@ defmodule Form do
     field :name, :string, validate: :required
   end
 end
-
-# Using the form
 ```
+
+Check out the full "Hello World" example [here](https://github.com/joerichsen/smart_form_examples/blob/main/lib/smart_form_examples_web/live/hello_world.ex).
+
+More examples can be found in the [SmartForm Examples repo](https://github.com/joerichsen/smart_form_examples/)
 
 ## Installation
 
