@@ -134,9 +134,40 @@ defmodule SmartForm do
           end)
 
         form
+        |> Map.put(:form_changeset, changeset)
         |> Map.put(:valid?, changeset.valid?)
         |> Map.put(:errors, changeset.errors)
         |> Map.put(:params, params)
+      end
+
+      defimpl Phoenix.HTML.FormData do
+        @impl true
+        def to_form(form, options) do
+          changeset = form |> Map.get(:form_changeset) || @for.form_changeset(form)
+          options = Keyword.put(options, :as, "form")
+          form_data = Phoenix.HTML.FormData.to_form(changeset, options)
+          form_data |> Map.put(:errors, changeset.errors)
+        end
+
+        @impl true
+        def to_form(data, form, field, options) do
+          Phoenix.HTML.FormData.to_form(data, form, field, options)
+        end
+
+        @impl true
+        def input_type(data, form, field) do
+          Phoenix.HTML.FormData.input_type(data, form, field)
+        end
+
+        @impl true
+        def input_value(data, form, field) do
+          Phoenix.HTML.FormData.input_value(data, form, field)
+        end
+
+        @impl true
+        def input_validations(data, form, field) do
+          Phoenix.HTML.FormData.input_validations(data, form, field)
+        end
       end
     end
   end
