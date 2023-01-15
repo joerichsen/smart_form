@@ -16,7 +16,6 @@ defmodule SmartForm.MixProject do
       description:
         "SmartForm is a small DSL built on top of Ecto.Changeset to help you build forms.",
       package: package(),
-
       name: "SmartForm",
       docs: docs()
     ]
