@@ -8,7 +8,7 @@ defmodule FilteringTest do
     defmodule FilteringForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :title, :string
       end
     end

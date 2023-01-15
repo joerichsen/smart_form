@@ -8,7 +8,7 @@ defmodule ValidationsTest do
     defmodule ValidateUserForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :firstname, :string, required: true
       end
     end
@@ -38,7 +38,7 @@ defmodule ValidationsTest do
     defmodule MultipleValidationsUserForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :firstname, :string, required: true
         field :email, :string, format: ~r/@/, required: true
       end
@@ -80,7 +80,7 @@ defmodule ValidationsTest do
     defmodule ValidateRequiredUserForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :firstname, :string, required: true
       end
     end
@@ -110,7 +110,7 @@ defmodule ValidationsTest do
     defmodule ValidateFormatUserForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :email, :string, format: ~r/@/
       end
     end
@@ -140,7 +140,7 @@ defmodule ValidationsTest do
     defmodule LengthValidationForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :username, :string, max: 8
         field :password, :string, min: 3
         field :initials, :string, is: 2
@@ -207,7 +207,7 @@ defmodule ValidationsTest do
     defmodule InclusionValidationForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :role, :string, in: ["admin", "user"]
       end
     end
@@ -239,7 +239,7 @@ defmodule ValidationsTest do
     defmodule ExclusionValidationForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :role, :string, not_in: ["admin", "user"]
       end
     end
@@ -271,7 +271,7 @@ defmodule ValidationsTest do
     defmodule NumberValidationForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :age, :integer, greater_than: 18
         field :height, :float, greater_than_or_equal_to: 1.5
         field :weight, :float, less_than: 100
@@ -406,7 +406,7 @@ defmodule ValidationsTest do
     defmodule AcceptanceValidationForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :terms, :boolean, acceptance: true
       end
     end
@@ -432,7 +432,7 @@ defmodule ValidationsTest do
     defmodule ConfirmationValidationForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :password, :string, confirmation: true
       end
     end
@@ -464,7 +464,7 @@ defmodule ValidationsTest do
     defmodule SubsetValidationForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :roles, {:array, :string}, subset: ["admin", "user"]
       end
     end
@@ -490,7 +490,7 @@ defmodule ValidationsTest do
     defmodule CustomValidationForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :name, :string, validate: :name_must_be_john
       end
 
@@ -524,7 +524,7 @@ defmodule ValidationsTest do
     defmodule MultipleCustomValidationForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :name, :string,
           validate: :name_must_include_john,
           validate: :name_must_be_longer_than_5
@@ -574,7 +574,7 @@ defmodule ValidationsTest do
     defmodule ErrorMessagesForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :name, :string, required: true
       end
     end
@@ -594,7 +594,7 @@ defmodule ValidationsTest do
     defmodule NoValidationsForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :name, :string
       end
     end

@@ -8,7 +8,7 @@ defmodule ChangesetTest do
     defmodule ChangesetForm do
       use SmartForm
 
-      form do
+      smart_form do
         field :firstname, :string
       end
     end
