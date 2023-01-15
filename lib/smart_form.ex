@@ -124,7 +124,7 @@ defmodule SmartForm do
               {:validate, validation_function} ->
                 value = Ecto.Changeset.get_field(changeset, name)
 
-                validate_change(changeset, name, fn name, value ->
+                Ecto.Changeset.validate_change(changeset, name, fn name, value ->
                   apply(__MODULE__, validation_function, [changeset, name, value])
                 end)
 
