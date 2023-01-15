@@ -9,8 +9,9 @@ SmartForm is a small DSL built on top of Ecto which aims to make working with fo
 
 ## TODO
 
+* nested fields
 * partial validation
-* working with nested data is a breeze
+* support for passing a context to the custom validations as well as the get, set, and cast functions
 
 ## Example
 
