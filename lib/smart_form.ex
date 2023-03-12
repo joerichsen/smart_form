@@ -75,7 +75,14 @@ defmodule SmartForm do
           Enum.reduce(fields_with_set_function, changeset, fn {name, _type, opts}, changeset ->
             set_function = Keyword.get(opts, :set)
             value = Map.get(params, name) || Map.get(params, Atom.to_string(name))
-            set_value = apply(__MODULE__, set_function, [name, value])
+
+            set_value =
+              if form.context && function_exported?(__MODULE__, set_function, 3) do
+                apply(__MODULE__, set_function, [name, value, form.context])
+              else
+                apply(__MODULE__, set_function, [name, value])
+              end
+
             changeset |> Ecto.Changeset.put_change(name, set_value)
           end)
       end

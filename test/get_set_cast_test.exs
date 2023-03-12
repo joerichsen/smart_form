@@ -71,4 +71,67 @@ defmodule GetSetCastTest do
       assert changeset.changes.birthday == ~D[2010-12-23]
     end
   end
+
+  describe "get with context" do
+    defmodule GetContextBirthdayForm do
+      use SmartForm
+
+      smart_form do
+        field :birthday, :date, get: :localized_date
+      end
+
+      def localized_date(name, source, context) do
+        date = Map.get(source, name)
+        date && Calendar.strftime(date, context.date_format)
+      end
+    end
+
+    test "it should pass the context to the get function" do
+      user = %User{birthday: ~D[2010-12-23]}
+      form = GetContextBirthdayForm.new(user, %{date_format: "%d/%m/%Y"})
+      assert form.data.birthday == "23/12/2010"
+    end
+  end
+
+  describe "set with context" do
+    defmodule SetContextBirthdayForm do
+      use SmartForm
+
+      smart_form do
+        field :birthday, :date, set: :parse_date
+      end
+
+      def parse_date(_name, value, context) do
+        if value do
+          case context.date_format do
+            "%d/%m/%Y" ->
+              [day, month, year] = String.split(value, "/") |> Enum.map(&String.to_integer/1)
+              Date.new!(year, month, day)
+
+            "%m/%d/%Y" ->
+              [month, day, year] = String.split(value, "/") |> Enum.map(&String.to_integer/1)
+              Date.new!(year, month, day)
+          end
+        end
+      end
+    end
+
+    test "it should pass the context to the set function" do
+      changeset =
+        %User{}
+        |> SetContextBirthdayForm.new(%{date_format: "%d/%m/%Y"})
+        |> SetContextBirthdayForm.validate(%{"birthday" => "23/12/2010"})
+        |> SetContextBirthdayForm.changeset()
+
+      assert changeset.changes.birthday == ~D[2010-12-23]
+
+      changeset =
+        %User{}
+        |> SetContextBirthdayForm.new(%{date_format: "%m/%d/%Y"})
+        |> SetContextBirthdayForm.validate(%{"birthday" => "12/23/2010"})
+        |> SetContextBirthdayForm.changeset()
+
+      assert changeset.changes.birthday == ~D[2010-12-23]
+    end
+  end
 end
