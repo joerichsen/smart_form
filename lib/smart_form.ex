@@ -23,7 +23,7 @@ defmodule SmartForm do
     quote do
       import SmartForm, only: [smart_form: 1]
 
-      defstruct source: nil, valid?: nil, data: nil
+      defstruct source: nil, valid?: nil, data: nil, context: nil
 
       def new(source \\ %{}, context \\ %{}) do
         # Create a new map with a key for each field and the value from the source
@@ -40,7 +40,7 @@ defmodule SmartForm do
           end)
           |> Enum.into(%{})
 
-        %__MODULE__{source: source, data: data}
+        %__MODULE__{source: source, data: data, context: context}
       end
 
       def form_changeset(form, params \\ %{}) do
