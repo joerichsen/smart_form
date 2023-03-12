@@ -83,7 +83,14 @@ defmodule SmartForm do
                 apply(__MODULE__, set_function, [name, value])
               end
 
-            changeset |> Ecto.Changeset.put_change(name, set_value)
+            # If set_value is a map we iterate over the keys and update the changeset
+            if is_map(set_value) && !is_struct(set_value) do
+              Enum.reduce(set_value, changeset, fn {key, value}, changeset ->
+                Ecto.Changeset.put_change(changeset, key, value)
+              end)
+            else
+              Ecto.Changeset.put_change(changeset, name, set_value)
+            end
           end)
       end
 

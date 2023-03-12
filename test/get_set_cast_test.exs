@@ -134,4 +134,32 @@ defmodule GetSetCastTest do
       assert changeset.changes.birthday == ~D[2010-12-23]
     end
   end
+
+  describe "set with multiple parameters" do
+    defmodule SetPriceWithCurrencyForm do
+      use SmartForm
+
+      smart_form do
+        field :price, :string, set: :parse_price
+      end
+
+      def parse_price(:price, value, context) do
+        if value do
+          cents = String.to_float(value) * 100
+          %{price_cents: cents, price_currency: context.currency}
+        end
+      end
+    end
+
+    test "should set both price_cents and price_currency" do
+      changeset =
+        %Book{}
+        |> SetPriceWithCurrencyForm.new(%{currency: "USD"})
+        |> SetPriceWithCurrencyForm.validate(%{"price" => "10.00"})
+        |> SetPriceWithCurrencyForm.changeset()
+
+      assert changeset.changes.price_cents == 1000
+      assert changeset.changes.price_currency == "USD"
+    end
+  end
 end
