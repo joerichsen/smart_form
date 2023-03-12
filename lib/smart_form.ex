@@ -44,10 +44,36 @@ defmodule SmartForm do
       end
 
       def form_changeset(form, params \\ %{}) do
-        types =
-          __fields() |> Enum.map(fn {name, type, _opts} -> {name, type} end) |> Enum.into(%{})
+        {fields_with_set_function, fields_with_no_set_function} =
+          __fields()
+          |> Enum.split_with(fn {_name, _type, opts} -> opts && Keyword.get(opts, :set) end)
 
-        {form.source, types} |> Ecto.Changeset.cast(params, Map.keys(types))
+        types =
+          __fields()
+          |> Enum.map(fn {name, type, _opts} -> {name, type} end)
+          |> Enum.into(%{})
+
+        # Remove the keys from the params that are not in the types map.
+        # Take special care of the confirmation fields
+        no_set_function_params =
+          params
+          |> Map.filter(fn {key, value} ->
+            Map.has_key?(types, String.to_atom(key)) ||
+              Map.has_key?(types, key |> String.replace("_confirmation", "") |> String.to_atom())
+          end)
+
+        # Create a changeset with the fields with no set function
+        changeset =
+          {form.source, types} |> Ecto.Changeset.cast(no_set_function_params, Map.keys(types))
+
+        # Iterate over the fields with a set function and apply the function and update the changeset
+        changeset =
+          Enum.reduce(fields_with_set_function, changeset, fn {name, _type, opts}, changeset ->
+            set_function = Keyword.get(opts, :set)
+            value = Map.get(params, name) || Map.get(params, Atom.to_string(name))
+            set_value = apply(__MODULE__, set_function, [name, value])
+            changeset |> Ecto.Changeset.put_change(name, set_value)
+          end)
       end
 
       def changeset(form) do

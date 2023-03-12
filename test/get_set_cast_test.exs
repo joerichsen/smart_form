@@ -43,4 +43,32 @@ defmodule GetSetCastTest do
       assert form.data.price == "10.00"
     end
   end
+
+  describe "set" do
+    defmodule SetBirthdayForm do
+      use SmartForm
+
+      smart_form do
+        field :birthday, :date, set: :parse_date
+      end
+
+      def parse_date(_name, value) do
+        if value do
+          [day, month, year] = String.split(value, "/") |> Enum.map(&String.to_integer/1)
+          Date.new!(year, month, day)
+        end
+      end
+    end
+
+    test "should return the value returned by the set function" do
+      form = %User{} |> SetBirthdayForm.new()
+
+      changeset =
+        form
+        |> SetBirthdayForm.validate(%{"birthday" => "23/12/2010"})
+        |> SetBirthdayForm.changeset()
+
+      assert changeset.changes.birthday == ~D[2010-12-23]
+    end
+  end
 end
