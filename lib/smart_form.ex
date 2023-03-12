@@ -25,7 +25,7 @@ defmodule SmartForm do
 
       defstruct source: nil, valid?: nil, data: nil, context: nil
 
-      def new(source \\ %{}, context \\ %{}) do
+      def new(source \\ %{}, context \\ nil) do
         # Create a new map with a key for each field and the value from the source
         data =
           __fields()
@@ -33,7 +33,11 @@ defmodule SmartForm do
             get_function = opts && Keyword.get(opts, :get)
 
             if get_function do
-              {name, apply(__MODULE__, get_function, [name, source])}
+              if context && function_exported?(__MODULE__, get_function, 3) do
+                {name, apply(__MODULE__, get_function, [name, source, context])}
+              else
+                {name, apply(__MODULE__, get_function, [name, source])}
+              end
             else
               {name, Map.get(source, name)}
             end
