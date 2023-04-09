@@ -4,26 +4,26 @@ defmodule FieldsForTest do
 
   alias SmartForm.Book
 
-  describe "validating the nested fields" do
-    defmodule ValidateBookForm do
-      use SmartForm
+  defmodule ValidateBookForm do
+    use SmartForm
 
-      smart_form do
+    smart_form do
+      field :title, :string, required: true
+
+      fields_for :chapters do
         field :title, :string, required: true
-
-        fields_for :chapters do
-          field :title, :string, required: true
-        end
       end
     end
+  end
 
+  describe "validating the nested fields" do
     test "should return true if the form is valid" do
       book = %Book{}
 
       form =
         ValidateBookForm.new(book)
         |> ValidateBookForm.validate(%{
-          "title" => "Book title",
+          "title" => "It",
           "chapters" => [%{"title" => "Chapter 1"}, %{"title" => "Chapter 2"}]
         })
 
@@ -41,6 +41,28 @@ defmodule FieldsForTest do
         })
 
       refute form.valid?
+    end
+  end
+
+  describe "changeset" do
+    test "should return a changeset applied to the source that can be inserted in the database" do
+      book = %Book{}
+
+      form =
+        ValidateBookForm.new(book)
+        |> ValidateBookForm.validate(%{
+          "title" => "It",
+          "chapters" => [%{"title" => "Chapter 1"}, %{"title" => "Chapter 2"}]
+        })
+        |> ValidateBookForm.changeset()
+
+      book = TestRepo.insert!(changeset)
+
+      repo_book = TestRepo.get(Book, book.id)
+      assert repo_book.title == "It"
+      assert length(repo_book.chapters) == 2
+      assert Enum.at(repo_book.chapters, 0).title == "Chapter 1"
+      assert Enum.at(repo_book.chapters, 1).title == "Chapter 2"
     end
   end
 end
