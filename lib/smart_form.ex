@@ -14,10 +14,20 @@ defmodule SmartForm do
     [{name, type, opts}]
   end
 
+  defp name_type_and_opts({:do, {:field, _, [name, type, opts]}}) do
+    {opts, _} = Code.eval_quoted(opts)
+    [{name, type, opts}]
+  end
+
   defp name_type_and_opts({:field, _, [name, type]}), do: [{name, type, nil}]
 
   defp name_type_and_opts({:__block__, _, fields}),
     do: fields |> Enum.flat_map(&name_type_and_opts(&1))
+
+  defp name_type_and_opts({:fields_for, _, [name, fields]}) do
+    nested_fields = fields |> Enum.flat_map(&name_type_and_opts(&1))
+    [{name, :fields_for, nested_fields}]
+  end
 
   defmacro __using__(_) do
     quote do
@@ -48,13 +58,31 @@ defmodule SmartForm do
       end
 
       def form_changeset(form, params \\ %{}) do
+        {nested_fields, fields} =
+          __fields() |> Enum.split_with(fn {_, type, _} -> type == :fields_for end)
+
         {fields_with_set_function, fields_with_no_set_function} =
-          __fields()
+          fields
           |> Enum.split_with(fn {_name, _type, opts} -> opts && Keyword.get(opts, :set) end)
 
         types =
-          __fields()
+          fields
           |> Enum.map(fn {name, type, _opts} -> {name, type} end)
+          |> Enum.into(%{})
+
+        embedded_types =
+          nested_fields
+          |> Enum.map(fn {name, _type, nested_fields} ->
+            related = form.source.__meta__.schema.__schema__(:association, :chapters).related
+
+            {name,
+             {:embed,
+              %Ecto.Embedded{
+                cardinality: :many,
+                field: name,
+                related: related
+              }}}
+          end)
           |> Enum.into(%{})
 
         # Remove the keys from the params that are not in the types map.
@@ -63,12 +91,18 @@ defmodule SmartForm do
           params
           |> Map.filter(fn {key, value} ->
             Map.has_key?(types, String.to_atom(key)) ||
-              Map.has_key?(types, key |> String.replace("_confirmation", "") |> String.to_atom())
+              Map.has_key?(embedded_types, String.to_atom(key)) ||
+              Map.has_key?(types, key |> String.replace("_confirmation", "") |> String.to_atom()) ||
+              Map.has_key?(
+                embedded_types,
+                key |> String.replace("_confirmation", "") |> String.to_atom()
+              )
           end)
 
         # Create a changeset with the fields with no set function
         changeset =
-          {form.source, types} |> Ecto.Changeset.cast(no_set_function_params, Map.keys(types))
+          {form.source, Map.merge(types, embedded_types)}
+          |> Ecto.Changeset.cast(no_set_function_params, Map.keys(types))
 
         # Iterate over the fields with a set function and apply the function and update the changeset
         changeset =
@@ -92,6 +126,16 @@ defmodule SmartForm do
               Ecto.Changeset.put_change(changeset, name, set_value)
             end
           end)
+
+        # Create a changeset for each of the nested fields
+        Enum.reduce(nested_fields, changeset, fn {name, _type, nested_fields}, changeset ->
+          cast_embed(changeset, name,
+            with: fn model, params ->
+              fields = nested_fields |> Enum.map(fn {name, _type, _opts} -> name end)
+              cast(model, params, fields)
+            end
+          )
+        end)
       end
 
       def changeset(form) do
@@ -101,13 +145,16 @@ defmodule SmartForm do
       def validate(form, params) do
         changeset = form_changeset(form, params)
 
+        {nested_fields, fields} =
+          __fields() |> Enum.split_with(fn {_, type, _} -> type == :fields_for end)
+
         # Create a list of tuples with the field name and the opt for each option
         # Ie. the definition
         #   field :email, :string, format: ~r/@/, required: true
         # will be converted to
         #   [email: {:format, ~r/@/}, email: {:required, true}]
         name_and_opt_list =
-          __fields()
+          fields
           |> Enum.flat_map(fn {name, _type, opts} ->
             (opts && Enum.map(opts, fn opt -> {name, opt} end)) || []
           end)
@@ -175,6 +222,96 @@ defmodule SmartForm do
               _ ->
                 changeset
             end
+          end)
+
+        # Validate the nested fields
+        changeset =
+          Enum.reduce(nested_fields, changeset, fn {nested_field, _type, nested_field_fields},
+                                                   changeset ->
+            nested_changesets = changeset.changes |> Map.get(nested_field)
+
+            # Apply validations for each of the nested changesets and for each nested changeset and each of the nested fields
+            nested_changesets =
+              Enum.map(nested_changesets, fn nested_changeset ->
+                nested_changeset =
+                  nested_field_fields
+                  |> Enum.reduce(nested_changeset, fn {name, _type, opts}, nested_changeset ->
+                    name_and_opt_list = (opts && Enum.map(opts, fn opt -> {name, opt} end)) || []
+
+                    name_and_opt_list
+                    |> Enum.reduce(nested_changeset, fn {name, opt}, nested_changeset ->
+                      case opt do
+                        {:required, true} ->
+                          Ecto.Changeset.validate_required(nested_changeset, name)
+
+                        {:format, format} ->
+                          Ecto.Changeset.validate_format(nested_changeset, name, format)
+
+                        {:min, min} ->
+                          Ecto.Changeset.validate_length(nested_changeset, name, min: min)
+
+                        {:max, max} ->
+                          Ecto.Changeset.validate_length(nested_changeset, name, max: max)
+
+                        {:is, is} ->
+                          Ecto.Changeset.validate_length(nested_changeset, name, is: is)
+
+                        {:in, data} ->
+                          Ecto.Changeset.validate_inclusion(nested_changeset, name, data)
+
+                        {:not_in, data} ->
+                          Ecto.Changeset.validate_exclusion(nested_changeset, name, data)
+
+                        {:less_than, number} ->
+                          Ecto.Changeset.validate_number(nested_changeset, name, less_than: number)
+
+                        {:greater_than, number} ->
+                          Ecto.Changeset.validate_number(nested_changeset, name,
+                            greater_than: number
+                          )
+
+                        {:less_than_or_equal_to, number} ->
+                          Ecto.Changeset.validate_number(nested_changeset, name,
+                            less_than_or_equal_to: number
+                          )
+
+                        {:greater_than_or_equal_to, number} ->
+                          Ecto.Changeset.validate_number(nested_changeset, name,
+                            greater_than_or_equal_to: number
+                          )
+
+                        {:equal_to, number} ->
+                          Ecto.Changeset.validate_number(nested_changeset, name, equal_to: number)
+
+                        {:not_equal_to, number} ->
+                          Ecto.Changeset.validate_number(nested_changeset, name,
+                            not_equal_to: number
+                          )
+
+                        {:acceptance, true} ->
+                          Ecto.Changeset.validate_acceptance(nested_changeset, name)
+
+                        {:confirmation, true} ->
+                          Ecto.Changeset.validate_confirmation(nested_changeset, name)
+
+                        {:subset, subset} ->
+                          Ecto.Changeset.validate_subset(nested_changeset, name, subset)
+
+                        {:validate, validation_function} ->
+                          value = Ecto.Changeset.get_field(nested_changeset, name)
+
+                          Ecto.Changeset.validate_change(nested_changeset, name, fn name, value ->
+                            apply(__MODULE__, validation_function, [nested_changeset, name, value])
+                          end)
+
+                        _ ->
+                          nested_changeset
+                      end
+                    end)
+                  end)
+              end)
+
+            Ecto.Changeset.put_change(changeset, nested_field, nested_changesets)
           end)
 
         form
