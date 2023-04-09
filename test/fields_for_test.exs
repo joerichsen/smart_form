@@ -70,7 +70,7 @@ defmodule FieldsForTest do
 
       book = TestRepo.insert!(changeset)
 
-      repo_book = TestRepo.get(Book, book.id)
+      repo_book = TestRepo.get(Book, book.id) |> TestRepo.preload(:chapters)
       assert repo_book.title == "It"
       assert length(repo_book.chapters) == 2
       assert Enum.at(repo_book.chapters, 0).title == "Chapter 1"

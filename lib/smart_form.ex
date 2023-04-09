@@ -114,7 +114,8 @@ defmodule SmartForm do
               %Ecto.Embedded{
                 cardinality: :many,
                 field: name,
-                related: related
+                related: related,
+                owner: form.source.__struct__
               }}}
           end)
           |> Enum.into(%{})
@@ -173,7 +174,23 @@ defmodule SmartForm do
       end
 
       def changeset(form) do
-        form_changeset(form, form.params)
+        changeset = form_changeset(form, form.params)
+        # Replace Ecto.Embed with Ecto.Association.Has
+        types =
+          changeset.types
+          |> Enum.map(fn {name, type} ->
+            case type do
+              {:embed, embedded} ->
+                assoc = embedded.owner.__schema__(:association, name)
+                {name, {:assoc, assoc}}
+
+              _ ->
+                {name, type}
+            end
+          end)
+          |> Enum.into(%{})
+
+        changeset |> Map.put(:types, types)
       end
 
       def validate(form, params) do
