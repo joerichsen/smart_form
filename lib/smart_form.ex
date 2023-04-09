@@ -160,69 +160,7 @@ defmodule SmartForm do
           end)
 
         # Apply validations
-        changeset =
-          name_and_opt_list
-          |> Enum.reduce(changeset, fn {name, opt}, changeset ->
-            case opt do
-              {:required, true} ->
-                Ecto.Changeset.validate_required(changeset, name)
-
-              {:format, format} ->
-                Ecto.Changeset.validate_format(changeset, name, format)
-
-              {:min, min} ->
-                Ecto.Changeset.validate_length(changeset, name, min: min)
-
-              {:max, max} ->
-                Ecto.Changeset.validate_length(changeset, name, max: max)
-
-              {:is, is} ->
-                Ecto.Changeset.validate_length(changeset, name, is: is)
-
-              {:in, data} ->
-                Ecto.Changeset.validate_inclusion(changeset, name, data)
-
-              {:not_in, data} ->
-                Ecto.Changeset.validate_exclusion(changeset, name, data)
-
-              {:less_than, number} ->
-                Ecto.Changeset.validate_number(changeset, name, less_than: number)
-
-              {:greater_than, number} ->
-                Ecto.Changeset.validate_number(changeset, name, greater_than: number)
-
-              {:less_than_or_equal_to, number} ->
-                Ecto.Changeset.validate_number(changeset, name, less_than_or_equal_to: number)
-
-              {:greater_than_or_equal_to, number} ->
-                Ecto.Changeset.validate_number(changeset, name, greater_than_or_equal_to: number)
-
-              {:equal_to, number} ->
-                Ecto.Changeset.validate_number(changeset, name, equal_to: number)
-
-              {:not_equal_to, number} ->
-                Ecto.Changeset.validate_number(changeset, name, not_equal_to: number)
-
-              {:acceptance, true} ->
-                Ecto.Changeset.validate_acceptance(changeset, name)
-
-              {:confirmation, true} ->
-                Ecto.Changeset.validate_confirmation(changeset, name)
-
-              {:subset, subset} ->
-                Ecto.Changeset.validate_subset(changeset, name, subset)
-
-              {:validate, validation_function} ->
-                value = Ecto.Changeset.get_field(changeset, name)
-
-                Ecto.Changeset.validate_change(changeset, name, fn name, value ->
-                  apply(__MODULE__, validation_function, [changeset, name, value])
-                end)
-
-              _ ->
-                changeset
-            end
-          end)
+        changeset = apply_validations(changeset, name_and_opt_list)
 
         # Validate the nested fields
         changeset =
@@ -233,82 +171,11 @@ defmodule SmartForm do
             # Apply validations for each of the nested changesets and for each nested changeset and each of the nested fields
             nested_changesets =
               Enum.map(nested_changesets, fn nested_changeset ->
-                nested_changeset =
-                  nested_field_fields
-                  |> Enum.reduce(nested_changeset, fn {name, _type, opts}, nested_changeset ->
-                    name_and_opt_list = (opts && Enum.map(opts, fn opt -> {name, opt} end)) || []
-
-                    name_and_opt_list
-                    |> Enum.reduce(nested_changeset, fn {name, opt}, nested_changeset ->
-                      case opt do
-                        {:required, true} ->
-                          Ecto.Changeset.validate_required(nested_changeset, name)
-
-                        {:format, format} ->
-                          Ecto.Changeset.validate_format(nested_changeset, name, format)
-
-                        {:min, min} ->
-                          Ecto.Changeset.validate_length(nested_changeset, name, min: min)
-
-                        {:max, max} ->
-                          Ecto.Changeset.validate_length(nested_changeset, name, max: max)
-
-                        {:is, is} ->
-                          Ecto.Changeset.validate_length(nested_changeset, name, is: is)
-
-                        {:in, data} ->
-                          Ecto.Changeset.validate_inclusion(nested_changeset, name, data)
-
-                        {:not_in, data} ->
-                          Ecto.Changeset.validate_exclusion(nested_changeset, name, data)
-
-                        {:less_than, number} ->
-                          Ecto.Changeset.validate_number(nested_changeset, name, less_than: number)
-
-                        {:greater_than, number} ->
-                          Ecto.Changeset.validate_number(nested_changeset, name,
-                            greater_than: number
-                          )
-
-                        {:less_than_or_equal_to, number} ->
-                          Ecto.Changeset.validate_number(nested_changeset, name,
-                            less_than_or_equal_to: number
-                          )
-
-                        {:greater_than_or_equal_to, number} ->
-                          Ecto.Changeset.validate_number(nested_changeset, name,
-                            greater_than_or_equal_to: number
-                          )
-
-                        {:equal_to, number} ->
-                          Ecto.Changeset.validate_number(nested_changeset, name, equal_to: number)
-
-                        {:not_equal_to, number} ->
-                          Ecto.Changeset.validate_number(nested_changeset, name,
-                            not_equal_to: number
-                          )
-
-                        {:acceptance, true} ->
-                          Ecto.Changeset.validate_acceptance(nested_changeset, name)
-
-                        {:confirmation, true} ->
-                          Ecto.Changeset.validate_confirmation(nested_changeset, name)
-
-                        {:subset, subset} ->
-                          Ecto.Changeset.validate_subset(nested_changeset, name, subset)
-
-                        {:validate, validation_function} ->
-                          value = Ecto.Changeset.get_field(nested_changeset, name)
-
-                          Ecto.Changeset.validate_change(nested_changeset, name, fn name, value ->
-                            apply(__MODULE__, validation_function, [nested_changeset, name, value])
-                          end)
-
-                        _ ->
-                          nested_changeset
-                      end
-                    end)
-                  end)
+                nested_field_fields
+                |> Enum.reduce(nested_changeset, fn {name, _type, opts}, nested_changeset ->
+                  name_and_opt_list = (opts && Enum.map(opts, fn opt -> {name, opt} end)) || []
+                  apply_validations(nested_changeset, name_and_opt_list)
+                end)
               end)
 
             Ecto.Changeset.put_change(changeset, nested_field, nested_changesets)
@@ -319,6 +186,71 @@ defmodule SmartForm do
         |> Map.put(:valid?, changeset.valid?)
         |> Map.put(:errors, changeset.errors)
         |> Map.put(:params, params)
+      end
+
+      defp apply_validations(changeset, name_and_opt_list) do
+        name_and_opt_list
+        |> Enum.reduce(changeset, fn {name, opt}, changeset ->
+          case opt do
+            {:required, true} ->
+              Ecto.Changeset.validate_required(changeset, name)
+
+            {:format, format} ->
+              Ecto.Changeset.validate_format(changeset, name, format)
+
+            {:min, min} ->
+              Ecto.Changeset.validate_length(changeset, name, min: min)
+
+            {:max, max} ->
+              Ecto.Changeset.validate_length(changeset, name, max: max)
+
+            {:is, is} ->
+              Ecto.Changeset.validate_length(changeset, name, is: is)
+
+            {:in, data} ->
+              Ecto.Changeset.validate_inclusion(changeset, name, data)
+
+            {:not_in, data} ->
+              Ecto.Changeset.validate_exclusion(changeset, name, data)
+
+            {:less_than, number} ->
+              Ecto.Changeset.validate_number(changeset, name, less_than: number)
+
+            {:greater_than, number} ->
+              Ecto.Changeset.validate_number(changeset, name, greater_than: number)
+
+            {:less_than_or_equal_to, number} ->
+              Ecto.Changeset.validate_number(changeset, name, less_than_or_equal_to: number)
+
+            {:greater_than_or_equal_to, number} ->
+              Ecto.Changeset.validate_number(changeset, name, greater_than_or_equal_to: number)
+
+            {:equal_to, number} ->
+              Ecto.Changeset.validate_number(changeset, name, equal_to: number)
+
+            {:not_equal_to, number} ->
+              Ecto.Changeset.validate_number(changeset, name, not_equal_to: number)
+
+            {:acceptance, true} ->
+              Ecto.Changeset.validate_acceptance(changeset, name)
+
+            {:confirmation, true} ->
+              Ecto.Changeset.validate_confirmation(changeset, name)
+
+            {:subset, subset} ->
+              Ecto.Changeset.validate_subset(changeset, name, subset)
+
+            {:validate, validation_function} ->
+              value = Ecto.Changeset.get_field(changeset, name)
+
+              Ecto.Changeset.validate_change(changeset, name, fn name, value ->
+                apply(__MODULE__, validation_function, [changeset, name, value])
+              end)
+
+            _ ->
+              changeset
+          end
+        end)
       end
 
       defimpl Phoenix.HTML.FormData do
