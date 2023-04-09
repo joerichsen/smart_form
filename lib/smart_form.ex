@@ -36,9 +36,12 @@ defmodule SmartForm do
       defstruct source: nil, valid?: nil, data: nil, context: nil
 
       def new(source \\ %{}, context \\ nil) do
+        {nested_fields, fields} =
+          __fields() |> Enum.split_with(fn {_, type, _} -> type == :fields_for end)
+
         # Create a new map with a key for each field and the value from the source
         data =
-          __fields()
+          fields
           |> Enum.map(fn {name, _type, opts} ->
             get_function = opts && Keyword.get(opts, :get)
 
@@ -53,6 +56,37 @@ defmodule SmartForm do
             end
           end)
           |> Enum.into(%{})
+
+        # Create a new map with a key for each nested field and the value from the source
+        nested_data =
+          nested_fields
+          |> Enum.map(fn {name, _type, nested_fields} ->
+            source = Map.get(source, name)
+
+            nested_data =
+              nested_fields
+              |> Enum.flat_map(fn {name, _type, opts} ->
+                get_function = opts && Keyword.get(opts, :get)
+
+                source
+                |> Enum.map(fn source ->
+                  if get_function do
+                    if context && function_exported?(__MODULE__, get_function, 3) do
+                      %{name => apply(__MODULE__, get_function, [name, source, context])}
+                    else
+                      %{name => apply(__MODULE__, get_function, [name, source])}
+                    end
+                  else
+                    %{name => Map.get(source, name)}
+                  end
+                end)
+              end)
+
+            {name, nested_data}
+          end)
+          |> Enum.into(%{})
+
+        data = Map.merge(data, nested_data)
 
         %__MODULE__{source: source, data: data, context: context}
       end
