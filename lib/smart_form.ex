@@ -139,29 +139,6 @@ defmodule SmartForm do
           {form.source, Map.merge(types, embedded_types)}
           |> Ecto.Changeset.cast(no_set_function_params, Map.keys(types))
 
-        # Iterate over the fields with a set function and apply the function and update the changeset
-        changeset =
-          Enum.reduce(fields_with_set_function, changeset, fn {name, _type, opts}, changeset ->
-            set_function = Keyword.get(opts, :set)
-            value = Map.get(params, name) || Map.get(params, Atom.to_string(name))
-
-            set_value =
-              if form.context && function_exported?(__MODULE__, set_function, 3) do
-                apply(__MODULE__, set_function, [name, value, form.context])
-              else
-                apply(__MODULE__, set_function, [name, value])
-              end
-
-            # If set_value is a map we iterate over the keys and update the changeset
-            if is_map(set_value) && !is_struct(set_value) do
-              Enum.reduce(set_value, changeset, fn {key, value}, changeset ->
-                Ecto.Changeset.put_change(changeset, key, value)
-              end)
-            else
-              Ecto.Changeset.put_change(changeset, name, set_value)
-            end
-          end)
-
         # Create a changeset for each of the nested fields
         Enum.reduce(nested_fields, changeset, fn {name, _type, nested_fields}, changeset ->
           cast_embed(changeset, name,
@@ -174,23 +151,81 @@ defmodule SmartForm do
       end
 
       def changeset(form) do
-        changeset = form_changeset(form, form.params)
-        # Replace Ecto.Embed with Ecto.Association.Has
-        types =
-          changeset.types
-          |> Enum.map(fn {name, type} ->
-            case type do
-              {:embed, embedded} ->
-                assoc = embedded.owner.__schema__(:association, name)
-                {name, {:assoc, assoc}}
+        params = form.params
+        changeset = form_changeset(form, params)
 
-              _ ->
-                {name, type}
+        {nested_fields, fields} =
+          __fields() |> Enum.split_with(fn {_, type, _} -> type == :fields_for end)
+
+        {fields_with_set_function, fields_with_no_set_function} =
+          fields
+          |> Enum.split_with(fn {_name, _type, opts} -> opts && Keyword.get(opts, :set) end)
+
+        # Allowed fields are the fields from the form and the keys of maps returned by custom set functions
+        form_fields = __fields() |> Enum.map(fn {name, _type, _opts} -> name end)
+
+        set_function_fields =
+          fields_with_set_function
+          |> Enum.map(fn {name, _type, opts} ->
+            set_function = Keyword.get(opts, :set)
+            value = Map.get(params, name) || Map.get(params, Atom.to_string(name))
+
+            set_value =
+              if form.context && function_exported?(__MODULE__, set_function, 3) do
+                apply(__MODULE__, set_function, [name, value, form.context])
+              else
+                apply(__MODULE__, set_function, [name, value])
+              end
+
+            # If set_value is a map we iterate over the keys and update the changeset
+            if is_map(set_value) && !is_struct(set_value) do
+              Map.keys(set_value)
+            else
+              []
             end
           end)
-          |> Enum.into(%{})
+          |> List.flatten()
 
-        changeset |> Map.put(:types, types)
+        fields = form_fields ++ set_function_fields
+
+        # Restrict the fields to the ones that are in the source
+        source_fields = form.source.__meta__.schema.__schema__(:fields)
+        fields = Enum.filter(fields, fn field -> Enum.member?(source_fields, field) end)
+
+        changeset = form.source |> Ecto.Changeset.cast(params, fields)
+
+        # Cast the nested fields
+        changeset =
+          Enum.reduce(nested_fields, changeset, fn {name, _type, nested_fields}, changeset ->
+            cast_assoc(changeset, name,
+              with: fn model, params ->
+                fields = nested_fields |> Enum.map(fn {name, _type, _opts} -> name end)
+                cast(model, params, fields)
+              end
+            )
+          end)
+
+        # Iterate over the fields with a set function and apply the function and update the changeset
+        Enum.reduce(fields_with_set_function, changeset, fn {name, _type, opts}, changeset ->
+          set_function = Keyword.get(opts, :set)
+          value = Map.get(params, name) || Map.get(params, Atom.to_string(name))
+
+          set_value =
+            if form.context && function_exported?(__MODULE__, set_function, 3) do
+              apply(__MODULE__, set_function, [name, value, form.context])
+            else
+              apply(__MODULE__, set_function, [name, value])
+            end
+
+          # If set_value is a map we iterate over the keys and update the changeset
+          if is_map(set_value) && !is_struct(set_value) do
+            Enum.reduce(set_value, changeset, fn {key, value}, changeset ->
+              Ecto.Changeset.put_change(changeset, key, value)
+            end)
+          else
+            Ecto.Changeset.put_change(changeset, name, set_value)
+          end
+        end)
       end
 
       def validate(form, params) do
