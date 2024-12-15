@@ -10,6 +10,14 @@ defmodule SmartForm.Transformers.GenerateNew do
           # in our regular ELixir code.
           SmartForm.new(__MODULE__, data, ctx)
         end
+
+        def validate(smart_form, params) do
+          SmartForm.validate(__MODULE__, smart_form, params)
+        end
+
+        def changeset(smart_form) do
+          SmartForm.changeset(__MODULE__, smart_form)
+        end
       end
 
     {:ok, Spark.Dsl.Transformer.eval(dsl_state, [], new)}
