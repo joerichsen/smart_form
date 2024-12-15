@@ -35,7 +35,8 @@ defmodule SmartForm.MixProject do
       {:phoenix_html, ">= 3.2.0"},
       {:ecto, ">= 3.9.1"},
       {:ecto_sqlite3, "~> 0.8.2", only: [:dev, :test]},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:spark, "~> 2.2"}
     ]
   end
 
